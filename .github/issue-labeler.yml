@@ -1,0 +1,18 @@
+bug:
+  - '(bug|issue|error|problem|fail)'
+enhancement:
+  - '(feature|enhancement|improvement)'
+documentation:
+  - '(doc|documentation|readme)'
+question:
+  - '(help|question|support)'
+meeting:
+  - '(meeting|schedule|agenda)'
+member:
+  - '(member|user|profile)'
+finance:
+  - '(finance|payment|money|contribution)'
+dashboard:
+  - '(dashboard|overview|analytics)'
+community:
+  - '(community|announcement)' 

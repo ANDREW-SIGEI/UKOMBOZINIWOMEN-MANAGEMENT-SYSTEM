@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Collect static files
+        run: |
+          python manage.py collectstatic --noinput
+          
+      - name: Run migrations
+        run: |
+          python manage.py migrate
+          
+      # Placeholder for actual deployment steps (you'll need to customize this)
+      - name: Deploy
+        run: |
+          echo "Deployment would happen here"
+          # Example deployment command (commented out)
+          # Use SSH to deploy to your server or integrate with a service like Heroku
+          # For real deployment, you'll need to set up secrets in GitHub
+          # Example: rsync -avz --exclude '.git' --exclude 'venv' . ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }} 
