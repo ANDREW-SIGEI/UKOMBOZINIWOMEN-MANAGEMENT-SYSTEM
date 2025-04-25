@@ -1,0 +1,195 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}User Profile | Ukombozini Women{% endblock %}
+
+{% block dashboard_content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user-cog"></i> User Profile</h2>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="list-group mb-4">
+                <a href="{% url 'dashboard:system_settings' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-sliders-h"></i> General Settings
+                </a>
+                <a href="{% url 'dashboard:user_profile' %}" class="list-group-item list-group-item-action active">
+                    <i class="fas fa-user-cog"></i> User Profile
+                </a>
+                <a href="{% url 'dashboard:backup_restore' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-database"></i> Backup & Restore
+                </a>
+                <a href="{% url 'dashboard:activity_logs' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-history"></i> Activity Logs
+                </a>
+                <a href="{% url 'admin:index' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-tools"></i> Admin Panel
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="row">
+                <!-- User Information -->
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-user"></i> Personal Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="personal_info">
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="first_name" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="first_name" name="first_name" value="{{ request.user.first_name }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="last_name" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="last_name" name="last_name" value="{{ request.user.last_name }}">
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="email" name="email" value="{{ request.user.email }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="username" name="username" value="{{ request.user.username }}" readonly>
+                                        <small class="text-muted">Username cannot be changed</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="phone" class="form-label">Phone Number</label>
+                                        <input type="text" class="form-control" id="phone" name="phone" value="+254 XXX XXX XXX">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="position" class="form-label">Position</label>
+                                        <input type="text" class="form-control" id="position" name="position" value="System Administrator">
+                                    </div>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Update Profile
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Change Password -->
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-key"></i> Change Password</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="change_password">
+                                
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="current_password" class="form-label">Current Password</label>
+                                        <input type="password" class="form-control" id="current_password" name="current_password">
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="new_password" class="form-label">New Password</label>
+                                        <input type="password" class="form-control" id="new_password" name="new_password">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                        <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                                    </div>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-key"></i> Change Password
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notification Preferences -->
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-bell"></i> Notification Preferences</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="notification_prefs">
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications" checked>
+                                            <label class="form-check-label" for="email_notifications">Email Notifications</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="sms_notifications" name="sms_notifications" checked>
+                                            <label class="form-check-label" for="sms_notifications">SMS Notifications</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="browser_notifications" name="browser_notifications" checked>
+                                            <label class="form-check-label" for="browser_notifications">Browser Notifications</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="meeting_reminders" name="meeting_reminders" checked>
+                                            <label class="form-check-label" for="meeting_reminders">Meeting Reminders</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="payment_reminders" name="payment_reminders" checked>
+                                            <label class="form-check-label" for="payment_reminders">Payment Reminders</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Save Preferences
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Add any JavaScript for the user profile page here
+    });
+</script>
+{% endblock %} 

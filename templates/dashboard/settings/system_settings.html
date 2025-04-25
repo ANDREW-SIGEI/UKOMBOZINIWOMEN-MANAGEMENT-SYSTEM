@@ -1,0 +1,163 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}System Settings | Ukombozini Women{% endblock %}
+
+{% block dashboard_content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-sliders-h"></i> System Settings</h2>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="list-group mb-4">
+                <a href="{% url 'dashboard:system_settings' %}" class="list-group-item list-group-item-action active">
+                    <i class="fas fa-sliders-h"></i> General Settings
+                </a>
+                <a href="{% url 'dashboard:user_profile' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-user-cog"></i> User Profile
+                </a>
+                <a href="{% url 'dashboard:backup_restore' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-database"></i> Backup & Restore
+                </a>
+                <a href="{% url 'dashboard:activity_logs' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-history"></i> Activity Logs
+                </a>
+                <a href="{% url 'admin:index' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-tools"></i> Admin Panel
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> General Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <h6 class="border-bottom pb-2 mb-3">Organization Information</h6>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="organization_name" class="form-label">Organization Name</label>
+                                    <input type="text" class="form-control" id="organization_name" name="organization_name" value="Ukombozini Women">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="organization_email" class="form-label">Organization Email</label>
+                                    <input type="email" class="form-control" id="organization_email" name="organization_email" value="info@ukomboziniwomen.org">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="organization_phone" class="form-label">Phone Number</label>
+                                    <input type="text" class="form-control" id="organization_phone" name="organization_phone" value="+254 123 456 789">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="organization_address" class="form-label">Address</label>
+                                    <input type="text" class="form-control" id="organization_address" name="organization_address" value="Nairobi, Kenya">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h6 class="border-bottom pb-2 mb-3">System Defaults</h6>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="default_currency" class="form-label">Default Currency</label>
+                                    <select class="form-select" id="default_currency" name="default_currency">
+                                        <option value="KES" selected>Kenyan Shilling (KES)</option>
+                                        <option value="USD">US Dollar (USD)</option>
+                                        <option value="EUR">Euro (EUR)</option>
+                                        <option value="GBP">British Pound (GBP)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="default_language" class="form-label">Default Language</label>
+                                    <select class="form-select" id="default_language" name="default_language">
+                                        <option value="en" selected>English</option>
+                                        <option value="sw">Swahili</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="date_format" class="form-label">Date Format</label>
+                                    <select class="form-select" id="date_format" name="date_format">
+                                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                        <option value="DD/MM/YYYY" selected>DD/MM/YYYY</option>
+                                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="time_format" class="form-label">Time Format</label>
+                                    <select class="form-select" id="time_format" name="time_format">
+                                        <option value="12" selected>12-hour (AM/PM)</option>
+                                        <option value="24">24-hour</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h6 class="border-bottom pb-2 mb-3">Notification Settings</h6>
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications" checked>
+                                    <label class="form-check-label" for="email_notifications">Email Notifications</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="sms_notifications" name="sms_notifications" checked>
+                                    <label class="form-check-label" for="sms_notifications">SMS Notifications</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="meeting_reminders" name="meeting_reminders" checked>
+                                    <label class="form-check-label" for="meeting_reminders">Meeting Reminders</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="payment_reminders" name="payment_reminders" checked>
+                                    <label class="form-check-label" for="payment_reminders">Payment Reminders</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Add any JavaScript for the settings page here
+    });
+</script>
+{% endblock %} 

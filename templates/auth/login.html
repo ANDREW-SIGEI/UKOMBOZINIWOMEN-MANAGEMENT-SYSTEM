@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login | UkomboziniWomen{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-color: #F1F8E9;
+    }
+    
+    .login-container {
+        max-width: 450px;
+        margin: 0 auto;
+        padding-top: 100px;
+    }
+    
+    .login-logo {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .login-logo img {
+        max-width: 150px;
+    }
+    
+    .login-logo h2 {
+        color: #2E7D32;
+        margin-top: 15px;
+    }
+    
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header {
+        background-color: #2E7D32;
+        color: white;
+        border-radius: 10px 10px 0 0 !important;
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .form-control {
+        border-radius: 5px;
+        padding: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .btn-login {
+        background-color: #2E7D32;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 12px;
+        width: 100%;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+    
+    .btn-login:hover {
+        background-color: #1B5E20;
+        color: white;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-check-label {
+        font-size: 14px;
+    }
+    
+    .forgot-password {
+        text-align: right;
+        font-size: 14px;
+    }
+    
+    .login-footer {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container login-container">
+    <div class="login-logo">
+        <img src="{% static 'images/icon-160x160.png' %}" alt="Logo" onerror="this.src='https://via.placeholder.com/150x150?text=Ukombozini'">
+        <h2>UkomboziniWomen</h2>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h4>Login to Management System</h4>
+        </div>
+        <div class="card-body p-4">
+            {% if form.errors %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Error!</strong> Your username or password is incorrect.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+            
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_username">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter your username" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" name="password" id="id_password" class="form-control" placeholder="Enter your password" required>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="remember_me" id="remember_me">
+                            <label class="form-check-label" for="remember_me">Remember me</label>
+                        </div>
+                    </div>
+                    <div class="col-6 forgot-password">
+                        <a href="#">Forgot password?</a>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-login">
+                    <i class="fas fa-sign-in-alt me-2"></i> Login
+                </button>
+                
+                <input type="hidden" name="next" value="{{ next }}">
+            </form>
+        </div>
+    </div>
+    
+    <div class="login-footer">
+        <p>UkomboziniWomen Management System &copy; 2024</p>
+        <p><i class="fas fa-wifi me-1"></i> <span id="connection-status">Checking connection...</span></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check connection status
+        const statusElement = document.getElementById('connection-status');
+        if (statusElement) {
+            if (navigator.onLine) {
+                statusElement.innerHTML = 'Online';
+                statusElement.className = 'text-success';
+            } else {
+                statusElement.innerHTML = 'Offline';
+                statusElement.className = 'text-warning';
+            }
+        }
+        
+        // Add event listeners for online/offline events
+        window.addEventListener('online', function() {
+            if (statusElement) {
+                statusElement.innerHTML = 'Online';
+                statusElement.className = 'text-success';
+            }
+        });
+        
+        window.addEventListener('offline', function() {
+            if (statusElement) {
+                statusElement.innerHTML = 'Offline';
+                statusElement.className = 'text-warning';
+            }
+        });
+    });
+</script>
+{% endblock %} 

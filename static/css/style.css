@@ -1,0 +1,167 @@
+/* UkomboziniWomen Management System Styles */
+
+:root {
+    --primary-color: #2E7D32;
+    --secondary-color: #689F38;
+    --accent-color: #8BC34A;
+    --background-color: #F1F8E9;
+    --text-color: #333333;
+    --danger-color: #F44336;
+    --warning-color: #FF9800;
+    --success-color: #4CAF50;
+    --info-color: #2196F3;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+/* Cards */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    border-radius: 8px 8px 0 0 !important;
+    font-weight: 600;
+}
+
+.card-primary .card-header {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.card-secondary .card-header {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.card-accent .card-header {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #1B5E20;
+    border-color: #1B5E20;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-secondary:hover, .btn-secondary:focus {
+    background-color: #558B2F;
+    border-color: #558B2F;
+}
+
+.btn-accent {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+.btn-accent:hover, .btn-accent:focus {
+    background-color: #7CB342;
+    border-color: #7CB342;
+    color: white;
+}
+
+/* Forms */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.25);
+}
+
+/* Tables */
+.table-hover tbody tr:hover {
+    background-color: rgba(139, 195, 74, 0.1);
+}
+
+.table thead th {
+    background-color: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+}
+
+/* Dashboard Stats */
+.stats-card {
+    border-left: 5px solid var(--primary-color);
+    background-color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stats-card .stats-icon {
+    font-size: 32px;
+    color: var(--primary-color);
+}
+
+.stats-card .stats-number {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.stats-card .stats-text {
+    color: #666;
+    font-size: 14px;
+}
+
+/* Alert styles */
+.alert-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.alert-danger {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.alert-warning {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.alert-info {
+    background-color: var(--info-color);
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .stats-card {
+        padding: 10px;
+    }
+    
+    .stats-card .stats-icon {
+        font-size: 24px;
+    }
+    
+    .stats-card .stats-number {
+        font-size: 20px;
+    }
+} 

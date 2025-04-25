@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Meetings | Ukombozini Women{% endblock %}
+
+{% block extra_css %}
+<style>
+  .meeting-card {
+    transition: transform 0.2s;
+    margin-bottom: 20px;
+    height: 100%;
+  }
+  .meeting-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  .meeting-card .card-header {
+    padding: 0.75rem 1.25rem;
+  }
+  .meeting-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  .meeting-date {
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+  .meeting-time {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  .meeting-location {
+    margin-top: 10px;
+    font-style: italic;
+  }
+  .meeting-attendees {
+    margin-top: 10px;
+  }
+  .filter-container {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+  .meeting-type-scheduled { border-left: 4px solid #17a2b8; }
+  .meeting-type-completed { border-left: 4px solid #28a745; }
+  .meeting-type-canceled { border-left: 4px solid #dc3545; }
+  .meeting-type-postponed { border-left: 4px solid #ffc107; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Meetings</h2>
+    <a href="{% url 'dashboard:meeting_create' %}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> New Meeting
+    </a>
+  </div>
+  
+  <div class="filter-container">
+    <form method="get" class="row">
+      <div class="col-md-3 mb-2">
+        <label for="status">Status</label>
+        <select name="status" id="status" class="form-control">
+          <option value="">All Statuses</option>
+          <option value="scheduled" {% if request.GET.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+          <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+          <option value="canceled" {% if request.GET.status == 'canceled' %}selected{% endif %}>Canceled</option>
+          <option value="postponed" {% if request.GET.status == 'postponed' %}selected{% endif %}>Postponed</option>
+        </select>
+      </div>
+      <div class="col-md-3 mb-2">
+        <label for="meeting_type">Meeting Type</label>
+        <select name="meeting_type" id="meeting_type" class="form-control">
+          <option value="">All Types</option>
+          <option value="board" {% if request.GET.meeting_type == 'board' %}selected{% endif %}>Board Meeting</option>
+          <option value="general" {% if request.GET.meeting_type == 'general' %}selected{% endif %}>General Meeting</option>
+          <option value="committee" {% if request.GET.meeting_type == 'committee' %}selected{% endif %}>Committee Meeting</option>
+          <option value="special" {% if request.GET.meeting_type == 'special' %}selected{% endif %}>Special Meeting</option>
+        </select>
+      </div>
+      <div class="col-md-3 mb-2">
+        <label for="date_from">From Date</label>
+        <input type="date" name="date_from" id="date_from" class="form-control" value="{{ request.GET.date_from }}">
+      </div>
+      <div class="col-md-3 mb-2">
+        <label for="date_to">To Date</label>
+        <input type="date" name="date_to" id="date_to" class="form-control" value="{{ request.GET.date_to }}">
+      </div>
+      <div class="col-12 mt-2">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="{% url 'dashboard:meeting_list' %}" class="btn btn-secondary ml-2">Reset</a>
+      </div>
+    </form>
+  </div>
+  
+  {% if meetings %}
+    <div class="row">
+      {% for meeting in meetings %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card meeting-card meeting-type-{{ meeting.status }}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">{{ meeting.meeting_type_display }}</h5>
+              <span class="badge badge-pill 
+                {% if meeting.status == 'scheduled' %}badge-info
+                {% elif meeting.status == 'completed' %}badge-success
+                {% elif meeting.status == 'canceled' %}badge-danger
+                {% elif meeting.status == 'postponed' %}badge-warning
+                {% endif %}">
+                {{ meeting.get_status_display }}
+              </span>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">{{ meeting.title }}</h5>
+              <div class="meeting-date">
+                <i class="far fa-calendar-alt mr-1"></i> {{ meeting.scheduled_date|date:"l, F d, Y" }}
+              </div>
+              <div class="meeting-time">
+                <i class="far fa-clock mr-1"></i> {{ meeting.start_time }} - {{ meeting.end_time }}
+              </div>
+              {% if meeting.location %}
+                <div class="meeting-location">
+                  <i class="fas fa-map-marker-alt mr-1"></i> {{ meeting.location }}
+                </div>
+              {% endif %}
+              <div class="meeting-attendees">
+                <small><i class="fas fa-users mr-1"></i> {{ meeting.attendees.count }} attendees</small>
+              </div>
+              <p class="card-text mt-2">
+                {{ meeting.description|truncatechars:100 }}
+              </p>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+              <a href="{% url 'dashboard:meeting_detail' meeting.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+              
+              {% if meeting.status == 'scheduled' %}
+                <div class="btn-group">
+                  <a href="{% url 'dashboard:meeting_update' meeting.id %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                  <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown">
+                    <span class="sr-only">Toggle Dropdown</span>
+                  </button>
+                  <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="{% url 'dashboard:meeting_complete' meeting.id %}">Mark Complete</a>
+                    <a class="dropdown-item" href="{% url 'dashboard:meeting_cancel' meeting.id %}">Cancel Meeting</a>
+                    <a class="dropdown-item" href="{% url 'dashboard:meeting_postpone' meeting.id %}">Postpone Meeting</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item text-danger" href="#" data-toggle="modal" data-target="#deleteModal{{ meeting.id }}">Delete</a>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Delete Modal -->
+        <div class="modal fade" id="deleteModal{{ meeting.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Delete Meeting</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                Are you sure you want to delete the meeting "{{ meeting.title }}"? This action cannot be undone.
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form action="{% url 'dashboard:meeting_delete' meeting.id %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+      <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="First">
+                <span aria-hidden="true">&laquo;&laquo;</span>
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <a class="page-link" href="#" aria-label="First">
+                <span aria-hidden="true">&laquo;&laquo;</span>
+              </a>
+            </li>
+            <li class="page-item disabled">
+              <a class="page-link" href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% endif %}
+          
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+          
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Last">
+                <span aria-hidden="true">&raquo;&raquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <a class="page-link" href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            <li class="page-item disabled">
+              <a class="page-link" href="#" aria-label="Last">
+                <span aria-hidden="true">&raquo;&raquo;</span>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+    
+  {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i> No meetings found matching your criteria. <a href="{% url 'dashboard:meeting_create' %}" class="alert-link">Create a new meeting</a>.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  $(document).ready(function() {
+    // Automatically submit form when filters change (except date fields)
+    $('#status, #meeting_type').on('change', function() {
+      $(this).closest('form').submit();
+    });
+  });
+</script>
+{% endblock %} 

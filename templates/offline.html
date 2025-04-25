@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Offline | UkomboziniWomen{% endblock %}
+
+{% block extra_css %}
+<style>
+    .offline-container {
+        text-align: center;
+        padding: 50px 20px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .offline-icon {
+        font-size: 72px;
+        color: #689F38;
+        margin-bottom: 30px;
+    }
+    
+    h1 {
+        color: #2E7D32;
+        margin-bottom: 20px;
+    }
+    
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        margin-top: 30px;
+    }
+    
+    .card-header {
+        background-color: #2E7D32;
+        color: white;
+        border-radius: 10px 10px 0 0 !important;
+    }
+    
+    .list-group-item {
+        border-left: none;
+        border-right: none;
+    }
+    
+    .list-group-item:first-child {
+        border-top: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container offline-container">
+    <div class="offline-icon">
+        <i class="fas fa-wifi"></i>
+    </div>
+    
+    <h1>You're Currently Offline</h1>
+    <p class="lead">Don't worry! You can still access some features of the UkomboziniWomen Management System.</p>
+    
+    <div class="card">
+        <div class="card-header">
+            <h5>Available Offline Features</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <i class="fas fa-check-circle text-success me-2"></i> View cached member information
+            </li>
+            <li class="list-group-item">
+                <i class="fas fa-check-circle text-success me-2"></i> Record new transactions (will sync when online)
+            </li>
+            <li class="list-group-item">
+                <i class="fas fa-check-circle text-success me-2"></i> View recent payment history
+            </li>
+            <li class="list-group-item">
+                <i class="fas fa-check-circle text-success me-2"></i> Calculate loan balances and repayments
+            </li>
+            <li class="list-group-item">
+                <i class="fas fa-check-circle text-success me-2"></i> Access saved reports
+            </li>
+        </ul>
+    </div>
+    
+    <div class="mt-4">
+        <button id="retry-connection" class="btn btn-primary">
+            <i class="fas fa-sync-alt me-2"></i> Retry Connection
+        </button>
+        <a href="/" class="btn btn-outline-secondary ms-2">
+            <i class="fas fa-home me-2"></i> Go to Homepage
+        </a>
+    </div>
+    
+    <div class="mt-4 text-muted">
+        <small>All data recorded while offline will be automatically synchronized when you reconnect to the internet.</small>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const retryButton = document.getElementById('retry-connection');
+        
+        if (retryButton) {
+            retryButton.addEventListener('click', function() {
+                window.location.reload();
+            });
+        }
+        
+        // Listen for online event
+        window.addEventListener('online', function() {
+            // Reload the page when connection is restored
+            window.location.reload();
+        });
+    });
+</script>
+{% endblock %} 

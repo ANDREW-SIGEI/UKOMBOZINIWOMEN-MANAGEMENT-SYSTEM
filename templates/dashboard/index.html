@@ -1,0 +1,292 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>Dashboard</h1>
+        <p class="lead">Welcome to UkomboziniWomen Management System</p>
+        
+        <!-- Connection Status -->
+        <div class="alert alert-info" role="alert">
+            Connection Status: <span id="connection-status"><i class="fas fa-wifi"></i> Checking...</span>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Key Statistics -->
+    <div class="col-md-3 col-sm-6">
+        <div class="stats-card">
+            <div class="row">
+                <div class="col-4">
+                    <div class="stats-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="col-8">
+                    <div class="stats-number">{{ total_members|default:"0" }}</div>
+                    <div class="stats-text">Total Members</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+        <div class="stats-card">
+            <div class="row">
+                <div class="col-4">
+                    <div class="stats-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                </div>
+                <div class="col-8">
+                    <div class="stats-number">{{ total_groups|default:"0" }}</div>
+                    <div class="stats-text">Registered Groups</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+        <div class="stats-card">
+            <div class="row">
+                <div class="col-4">
+                    <div class="stats-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                </div>
+                <div class="col-8">
+                    <div class="stats-number">{{ active_loans|default:"0" }}</div>
+                    <div class="stats-text">Active Loans</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+        <div class="stats-card">
+            <div class="row">
+                <div class="col-4">
+                    <div class="stats-icon">
+                        <i class="fas fa-piggy-bank"></i>
+                    </div>
+                </div>
+                <div class="col-8">
+                    <div class="stats-number">{{ total_savings|default:"0" }}</div>
+                    <div class="stats-text">Total Savings (KSh)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h5 class="card-title">Recent Loans</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_loans %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Member/Group</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in recent_loans %}
+                            <tr>
+                                <td>{{ loan.id }}</td>
+                                <td>{{ loan.member_name }}</td>
+                                <td>KSh {{ loan.amount }}</td>
+                                <td>
+                                    {% if loan.status == 'active' %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% elif loan.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif loan.status == 'completed' %}
+                                    <span class="badge bg-info">Completed</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ loan.status }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>No recent loans to display</p>
+                {% endif %}
+                <a href="#" class="btn btn-outline-primary btn-sm mt-2">View All Loans</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card card-secondary">
+            <div class="card-header">
+                <h5 class="card-title">Recent Payments</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_payments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Member/Group</th>
+                                <th>Amount</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in recent_payments %}
+                            <tr>
+                                <td>{{ payment.date }}</td>
+                                <td>{{ payment.member_name }}</td>
+                                <td>KSh {{ payment.amount }}</td>
+                                <td>{{ payment.type }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>No recent payments to display</p>
+                {% endif %}
+                <a href="#" class="btn btn-outline-secondary btn-sm mt-2">View All Payments</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title">Agriculture Collections</h5>
+            </div>
+            <div class="card-body">
+                <div id="agriculture-collection-chart"></div>
+                <p>Total Collection: KSh {{ agriculture_total|default:"0" }}</p>
+                <a href="#" class="btn btn-outline-info btn-sm">View Details</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="card-title">School Fees Collections</h5>
+            </div>
+            <div class="card-body">
+                <div id="school-fees-chart"></div>
+                <p>Total Collection: KSh {{ school_fees_total|default:"0" }}</p>
+                <a href="#" class="btn btn-outline-warning btn-sm">View Details</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title">Upcoming Payments</h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_payments %}
+                <ul class="list-group">
+                    {% for payment in upcoming_payments %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ payment.member_name }}
+                        <span>KSh {{ payment.amount }} <span class="badge bg-primary rounded-pill">{{ payment.due_date }}</span></span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No upcoming payments to display</p>
+                {% endif %}
+                <a href="#" class="btn btn-outline-success btn-sm mt-2">View Calendar</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sample data for charts
+        // Replace with actual data from your backend in production
+        
+        // Agriculture Collections Chart
+        const agricultureCtx = document.getElementById('agriculture-collection-chart');
+        if (agricultureCtx) {
+            new Chart(agricultureCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Corn', 'Beans', 'Potatoes', 'Other'],
+                    datasets: [{
+                        data: [35, 25, 20, 20],
+                        backgroundColor: [
+                            '#2E7D32',
+                            '#689F38',
+                            '#8BC34A',
+                            '#AED581'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+        
+        // School Fees Chart
+        const schoolFeesCtx = document.getElementById('school-fees-chart');
+        if (schoolFeesCtx) {
+            new Chart(schoolFeesCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Primary', 'Secondary', 'College', 'University'],
+                    datasets: [{
+                        label: 'Amount Collected (KSh)',
+                        data: [25000, 150000, 80000, 200000],
+                        backgroundColor: [
+                            '#FF9800',
+                            '#FB8C00',
+                            '#F57C00',
+                            '#EF6C00'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 
