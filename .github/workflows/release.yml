@@ -1,0 +1,53 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Generate changelog
+        id: changelog
+        uses: metcalfc/changelog-generator@v4.0.1
+        with:
+          myToken: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            ## Changes in this Release
+            
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ## Installation
+            ```bash
+            # Clone the repository
+            git clone https://github.com/ANDREW-SIGEI/UKOMBOZINIWOMEN-MANAGEMENT-SYSTEM.git
+            cd UKOMBOZINIWOMEN-MANAGEMENT-SYSTEM
+            
+            # Install dependencies
+            pip install -r requirements.txt
+            
+            # Run migrations
+            python manage.py migrate
+            
+            # Start the server
+            python manage.py runserver
+            ```
+          draft: false
+          prerelease: false 

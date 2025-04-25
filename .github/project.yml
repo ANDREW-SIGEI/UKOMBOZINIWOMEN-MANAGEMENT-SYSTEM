@@ -1,0 +1,32 @@
+projectName: UKOMBOZINI WOMEN MANAGEMENT SYSTEM
+projectDescription: A comprehensive management system for Ukombozini Women's Group
+
+columns:
+  - name: To Do
+    description: Tasks that are planned but not yet started
+    cards:
+      - labels: [enhancement, documentation, bug]
+        status: open
+        
+  - name: In Progress
+    description: Tasks that are currently being worked on
+    cards:
+      - labels: [enhancement, documentation, bug]
+        status: open
+        assignee: "*"
+        
+  - name: Review
+    description: Tasks that are completed and awaiting review
+    cards:
+      - type: pull_request
+        status: open
+        
+  - name: Done
+    description: Tasks that are completed and merged/closed
+    cards:
+      - type: pull_request
+        status: closed
+        reason: completed
+      - type: issue
+        status: closed
+        reason: completed 
