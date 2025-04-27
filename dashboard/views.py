@@ -10,6 +10,7 @@ from .forms import MeetingForm
 from user_management.models import Member, Group, FieldOfficer
 from datetime import timedelta, datetime
 import calendar
+import json
 
 
 @login_required
@@ -69,7 +70,7 @@ def dashboard_index(request):
 
 
 def offline_view(request):
-    """View to display when user is offline."""
+    """View displayed when user is offline."""
     return render(request, 'offline.html')
 
 
@@ -548,60 +549,60 @@ def calendar_view(request):
     year = int(request.GET.get('year', now.year))
     month = int(request.GET.get('month', now.month))
     
-    # Get all meetings for the selected month
-    start_date = datetime(year, month, 1).date()
+    # Get all meetings for the calendar - for FullCalendar we'll actually get meetings for a wider range
+    # to ensure the calendar has data when navigating between months
+    start_date = datetime(year, month, 1).date() - timedelta(days=31)  # Include previous month
+    end_date = datetime(year, month, 1).date() + timedelta(days=62)    # Include next month
     
-    # Get the last day of the month
-    if month == 12:
-        end_date = datetime(year + 1, 1, 1).date() - timedelta(days=1)
-    else:
-        end_date = datetime(year, month + 1, 1).date() - timedelta(days=1)
-    
-    # Get meetings for the selected month
+    # Get meetings for the selected range
     meetings = Meeting.objects.filter(
         scheduled_date__gte=start_date,
         scheduled_date__lte=end_date
     ).order_by('scheduled_date', 'start_time')
     
-    # Group meetings by date
-    meeting_days = {}
+    # Format the meetings for FullCalendar
+    meetings_list = []
     for meeting in meetings:
-        day = meeting.scheduled_date.day
-        if day not in meeting_days:
-            meeting_days[day] = []
-        meeting_days[day].append(meeting)
+        # Combine date and time for FullCalendar
+        start_datetime = None
+        end_datetime = None
+        
+        if meeting.scheduled_date and meeting.start_time:
+            start_datetime = datetime.combine(meeting.scheduled_date, meeting.start_time)
+            
+        if meeting.scheduled_date and meeting.end_time:
+            end_datetime = datetime.combine(meeting.scheduled_date, meeting.end_time)
+        elif meeting.scheduled_date and meeting.start_time:
+            # If no end time, default to 1 hour after start
+            end_datetime = start_datetime + timedelta(hours=1)
+        
+        # Map status to colors
+        status_colors = {
+            'SCHEDULED': '#007bff',  # Blue
+            'COMPLETED': '#28a745',  # Green
+            'CANCELLED': '#dc3545',  # Red
+            'POSTPONED': '#ffc107',  # Yellow
+        }
+        
+        color = status_colors.get(meeting.status, '#6c757d')  # Default gray
+        
+        meeting_data = {
+            'id': meeting.id,
+            'title': meeting.title,
+            'start': start_datetime.isoformat() if start_datetime else None,
+            'end': end_datetime.isoformat() if end_datetime else None,
+            'color': color,
+            'url': None,  # We'll handle clicks via JavaScript
+            'allDay': meeting.start_time is None,
+        }
+        meetings_list.append(meeting_data)
     
-    # Get the calendar for the selected month
-    cal = calendar.monthcalendar(year, month)
-    
-    # Get month name
-    month_name = calendar.month_name[month]
-    
-    # Get previous and next month/year
-    prev_month = month - 1
-    prev_year = year
-    if prev_month == 0:
-        prev_month = 12
-        prev_year = year - 1
-    
-    next_month = month + 1
-    next_year = year
-    if next_month == 13:
-        next_month = 1
-        next_year = year + 1
+    # Convert to JSON for the template
+    meetings_json = json.dumps(meetings_list)
     
     context = {
-        'calendar': cal,
-        'month': month,
-        'month_name': month_name,
-        'year': year,
-        'prev_month': prev_month,
-        'prev_year': prev_year,
-        'next_month': next_month,
-        'next_year': next_year,
-        'meeting_days': meeting_days,
+        'meetings_json': meetings_json,
         'active_menu': 'meeting_calendar',
-        'today': now.date(),
     }
     
     return render(request, 'dashboard/calendar.html', context)
@@ -732,3 +733,15 @@ def meeting_remove_attachment(request, meeting_id, attachment_id):
     messages.info(request, "Attachment removal functionality will be implemented soon.")
     
     return redirect('dashboard:meeting_edit', meeting_id=meeting.id)
+
+
+@login_required
+def meeting_details_ajax(request, meeting_id):
+    """Return meeting details in a simplified format for AJAX requests."""
+    meeting = get_object_or_404(Meeting, id=meeting_id)
+    
+    context = {
+        'meeting': meeting,
+    }
+    
+    return render(request, 'dashboard/meeting_details_ajax.html', context)
