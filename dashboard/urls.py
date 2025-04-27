@@ -17,6 +17,7 @@ urlpatterns = [
     path('meetings/<int:meeting_id>/reschedule/', views.meeting_reschedule, name='meeting_reschedule'),
     path('meetings/<int:meeting_id>/attendance/', views.meeting_attendance, name='meeting_attendance'),
     path('meetings/<int:meeting_id>/remove-attachment/<int:attachment_id>/', views.meeting_remove_attachment, name='meeting_remove_attachment'),
+    path('meetings/<int:meeting_id>/details/', views.meeting_details_ajax, name='meeting_details_ajax'),
     
     # Settings and system URLs
     path('settings/', views.system_settings, name='system_settings'),
