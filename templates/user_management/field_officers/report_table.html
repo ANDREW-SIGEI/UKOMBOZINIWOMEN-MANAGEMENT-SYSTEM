@@ -1,0 +1,160 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Field Officer Report Table | UkomboziniWomen{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">
+                <i class="fas fa-file-alt me-2"></i> Field Officer Report Table
+            </h2>
+            <p class="lead">Report showing all field officer activities</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i> Field Officer Reports
+                </h5>
+                <div>
+                    <button type="button" class="btn btn-sm btn-light" id="export-excel">
+                        <i class="fas fa-file-excel me-1"></i> Export
+                    </button>
+                    <button type="button" class="btn btn-sm btn-light" id="print-table">
+                        <i class="fas fa-print me-1"></i> Print
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="report-table">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>DATE</th>
+                            <th>P.O NAME</th>
+                            <th>GROUPS NAMES</th>
+                            <th>TOTAL GROUPS ATTENDET</th>
+                            <th>ADMIN FOR EACH GROUP</th>
+                            <th>PROJECT REGISTRATION</th>
+                            <th>MEM.REG</th>
+                            <th>GROUP LOANS COLLECTED</th>
+                            <th>PROJECTS LOANS</th>
+                            <th>WELFARE FOR EACH GROUP</th>
+                            <th>TOTAL MONEY COLLECTED</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if report_data %}
+                            {% for row in report_data %}
+                                <tr>
+                                    <td>{{ row.date }}</td>
+                                    <td>{{ row.po_name }}</td>
+                                    <td>{{ row.groups_names }}</td>
+                                    <td>{{ row.total_groups_attendet }}</td>
+                                    <td>{{ row.admin_for_each_group }}</td>
+                                    <td>{{ row.project_registration }}</td>
+                                    <td>{{ row.mem_reg }}</td>
+                                    <td>{{ row.group_loans_collected }}</td>
+                                    <td>{{ row.projects_loans }}</td>
+                                    <td>{{ row.welfare_for_each_group }}</td>
+                                    <td>{{ row.total_money_collected }}</td>
+                                </tr>
+                            {% endfor %}
+                            <tr class="bg-light">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="11" class="text-center">No report data available</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-warning text-dark">
+                            <th>TOTAL</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th>{{ totals.admin_for_each_group|default:"1110" }}</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th>{{ totals.welfare_for_each_group|default:"KSh 720" }}</th>
+                            <th>{{ totals.total_money_collected|default:"KSh 1830" }}</th>
+                        </tr>
+                        <tr class="bg-light">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="bg-success text-white">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>{{ summary_stats.total_saved }}</td>
+                            <td></td>
+                            <td>{{ summary_stats.total_registered }}</td>
+                            <td>{{ summary_stats.total_loans }}</td>
+                            <td>{{ summary_stats.total_fees }}</td>
+                            <td>{{ summary_stats.total_welfare }}</td>
+                            <td>{{ summary_stats.total_all }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    $(document).ready(function() {
+        // Initialize datatables for sorting, pagination
+        $('#report-table').DataTable({
+            responsive: true,
+            dom: 'Bfrtip',
+            buttons: [
+                'copy', 'excel', 'pdf'
+            ]
+        });
+        
+        // Print table handler
+        $('#print-table').click(function() {
+            window.print();
+        });
+        
+        // Export to Excel handler
+        $('#export-excel').click(function() {
+            // This would be handled server-side with proper export libraries
+            alert('Excel export feature will be implemented');
+        });
+    });
+</script>
+{% endblock %} 

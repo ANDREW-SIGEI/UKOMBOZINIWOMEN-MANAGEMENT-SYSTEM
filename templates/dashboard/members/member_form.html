@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ form_title }} | Ukombozini Women{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'vendor/select2/css/select2.min.css' %}" rel="stylesheet">
+<link href="{% static 'vendor/select2-bootstrap4-theme/select2-bootstrap4.min.css' %}" rel="stylesheet">
+<style>
+    .required-field label:after {
+        content: " *";
+        color: red;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ form_title }}</h1>
+        <a href="{% url 'user_management:member_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Members
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Member Information</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 required-field">
+                                <div class="form-group">
+                                    <label for="{{ form.first_name.id_for_label }}">First Name</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.first_name.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 required-field">
+                                <div class="form-group">
+                                    <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.last_name.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 required-field">
+                                <div class="form-group">
+                                    <label for="{{ form.id_number.id_for_label }}">ID Number</label>
+                                    {{ form.id_number }}
+                                    {% if form.id_number.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.id_number.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4 required-field">
+                                <div class="form-group">
+                                    <label for="{{ form.gender.id_for_label }}">Gender</label>
+                                    {{ form.gender }}
+                                    {% if form.gender.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.gender.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4 required-field">
+                                <div class="form-group">
+                                    <label for="{{ form.date_of_birth.id_for_label }}">Date of Birth</label>
+                                    {{ form.date_of_birth }}
+                                    {% if form.date_of_birth.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.date_of_birth.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 required-field">
+                                <div class="form-group">
+                                    <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+                                    {{ form.phone_number }}
+                                    <small class="form-text text-muted">Format: +254XXXXXXXXX</small>
+                                    {% if form.phone_number.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.phone_number.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.email.id_for_label }}">Email Address</label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.email.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group required-field">
+                            <label for="{{ form.physical_address.id_for_label }}">Physical Address</label>
+                            {{ form.physical_address }}
+                            {% if form.physical_address.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.physical_address.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.occupation.id_for_label }}">Occupation</label>
+                            {{ form.occupation }}
+                            {% if form.occupation.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.occupation.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.field_officer.id_for_label }}">Field Officer</label>
+                            {{ form.field_officer }}
+                            <small class="form-text text-muted">Field officer responsible for this member</small>
+                            {% if form.field_officer.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.field_officer.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-check">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                    Active Member
+                                </label>
+                            </div>
+                            {% if form.is_active.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.is_active.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card mt-4 mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Next of Kin Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.next_of_kin_name.id_for_label }}">Next of Kin Name</label>
+                                            {{ form.next_of_kin_name }}
+                                            {% if form.next_of_kin_name.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.next_of_kin_name.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.next_of_kin_phone.id_for_label }}">Next of Kin Phone</label>
+                                            {{ form.next_of_kin_phone }}
+                                            {% if form.next_of_kin_phone.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.next_of_kin_phone.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.next_of_kin_relation.id_for_label }}">Relationship</label>
+                                    {{ form.next_of_kin_relation }}
+                                    {% if form.next_of_kin_relation.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.next_of_kin_relation.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.profile_photo.id_for_label }}">Profile Photo</label>
+                            {% if member.profile_photo %}
+                                <div class="mb-2">
+                                    <img src="{{ member.profile_photo.url }}" alt="Current profile photo" class="img-thumbnail" style="max-width: 150px;">
+                                </div>
+                            {% endif %}
+                            {{ form.profile_photo }}
+                            {% if form.profile_photo.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.profile_photo.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                {{ submit_label }}
+                            </button>
+                            <a href="{% url 'user_management:member_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/select2/js/select2.full.min.js' %}"></script>
+<script>
+    $(document).ready(function() {
+        // Initialize Select2
+        $('.select2').select2({
+            theme: 'bootstrap4',
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,75 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Report Submitted | UkomboziniWomen{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 text-center mt-5">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h2 class="text-success mb-4">
+                        <i class="fas fa-check-circle fa-2x mb-4"></i><br>
+                        Report Successfully Submitted!
+                    </h2>
+                    <p class="lead">Your field officer daily report has been successfully recorded in the system.</p>
+                    <p>Thank you for your contribution to the Ukombozini Women Management System.</p>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'user_management:field_officer_daily_report' %}" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-plus-circle me-2"></i>Submit Another Report
+                        </a>
+                        <a href="{% url 'user_management:field_officer_monthly_report' %}" class="btn btn-outline-success me-2">
+                            <i class="fas fa-chart-bar me-2"></i>View Monthly Reports
+                        </a>
+                        <a href="{% url 'user_management:field_officer_report_table' %}" class="btn btn-outline-warning me-2">
+                            <i class="fas fa-table me-2"></i>View Report Table
+                        </a>
+                        <a href="{% url 'dashboard:index' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">What's Next?</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-file-alt fa-3x text-primary mb-3"></i>
+                                    <h5>Submit Daily Reports</h5>
+                                    <p>Continue adding daily reports for your field activities</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                                    <h5>Generate Reports</h5>
+                                    <p>Create monthly and date range reports for analysis</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-file-export fa-3x text-warning mb-3"></i>
+                                    <h5>Export Data</h5>
+                                    <p>Export your reports in Excel or PDF formats</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

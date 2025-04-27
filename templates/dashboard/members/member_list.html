@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Members | Ukombozini Women{% endblock %}
+
+{% block extra_css %}
+<style>
+    .member-card {
+        transition: transform 0.2s;
+    }
+    
+    .member-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25em 0.5em;
+        border-radius: 10px;
+    }
+    
+    .status-active {
+        background-color: #1cc88a;
+        color: white;
+    }
+    
+    .status-inactive {
+        background-color: #e74a3b;
+        color: white;
+    }
+    
+    .filter-card {
+        border-left: 4px solid #4e73df;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Members</h1>
+        <a href="{% url 'user_management:member_create' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Add New Member
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row">
+        <!-- Total Members Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Members</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_members }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Members Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Active Members</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_members }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Export</div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-warning dropdown-toggle" type="button" id="exportDropdown" data-toggle="dropdown" aria-expanded="false">
+                                    Export Members
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="exportDropdown">
+                                    <a class="dropdown-item" href="{% url 'user_management:member_list' %}?export=csv">CSV</a>
+                                    <a class="dropdown-item" href="{% url 'user_management:member_list' %}?export=excel">Excel</a>
+                                    <a class="dropdown-item" href="{% url 'user_management:member_list' %}?export=pdf">PDF</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-download fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Import Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Import</div>
+                            <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#importModal">
+                                Import Members
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-upload fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filters Card -->
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow filter-card">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Filter Members</h6>
+                    <a href="{% url 'user_management:member_list' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-redo fa-sm"></i> Reset Filters
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="get" id="filter-form">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="is_active">Status</label>
+                                    <select name="is_active" id="is_active" class="form-control">
+                                        <option value="all" {% if is_active == 'all' %}selected{% endif %}>All Status</option>
+                                        <option value="active" {% if is_active == 'active' %}selected{% endif %}>Active</option>
+                                        <option value="inactive" {% if is_active == 'inactive' %}selected{% endif %}>Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="gender">Gender</label>
+                                    <select name="gender" id="gender" class="form-control">
+                                        <option value="all" {% if gender_filter == 'all' %}selected{% endif %}>All Genders</option>
+                                        <option value="M" {% if gender_filter == 'M' %}selected{% endif %}>Male</option>
+                                        <option value="F" {% if gender_filter == 'F' %}selected{% endif %}>Female</option>
+                                        <option value="O" {% if gender_filter == 'O' %}selected{% endif %}>Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="search">Search</label>
+                                    <input type="text" class="form-control" id="search" name="search" value="{{ search_query }}" placeholder="Search by name, ID or phone...">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 text-right">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter fa-sm"></i> Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Members Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Members List</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="membersTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID Number</th>
+                            <th>Full Name</th>
+                            <th>Gender</th>
+                            <th>Phone Number</th>
+                            <th>Status</th>
+                            <th>Registration Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in page_obj %}
+                            <tr>
+                                <td>{{ member.id_number }}</td>
+                                <td>{{ member.get_full_name }}</td>
+                                <td>{{ member.get_gender_display }}</td>
+                                <td>{{ member.phone_number }}</td>
+                                <td>
+                                    {% if member.is_active %}
+                                        <span class="status-badge status-active">Active</span>
+                                    {% else %}
+                                        <span class="status-badge status-inactive">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ member.registration_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <a href="{% url 'user_management:member_detail' member.id %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'user_management:member_edit' member.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'user_management:member_delete' member.id %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">No members found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="row mt-3">
+                    <div class="col-lg-12">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if is_active != 'all' %}&is_active={{ is_active }}{% endif %}{% if gender_filter != 'all' %}&gender={{ gender_filter }}{% endif %}" aria-label="First">
+                                            <span aria-hidden="true">&laquo;&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if is_active != 'all' %}&is_active={{ is_active }}{% endif %}{% if gender_filter != 'all' %}&gender={{ gender_filter }}{% endif %}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" aria-label="First">
+                                            <span aria-hidden="true">&laquo;&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for i in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == i %}
+                                        <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                                    {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}{% if is_active != 'all' %}&is_active={{ is_active }}{% endif %}{% if gender_filter != 'all' %}&gender={{ gender_filter }}{% endif %}">{{ i }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if is_active != 'all' %}&is_active={{ is_active }}{% endif %}{% if gender_filter != 'all' %}&gender={{ gender_filter }}{% endif %}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if is_active != 'all' %}&is_active={{ is_active }}{% endif %}{% if gender_filter != 'all' %}&gender={{ gender_filter }}{% endif %}" aria-label="Last">
+                                            <span aria-hidden="true">&raquo;&raquo;</span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" aria-label="Last">
+                                            <span aria-hidden="true">&raquo;&raquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">Import Members</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" enctype="multipart/form-data" action="{% url 'user_management:member_list' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="import_file">CSV File</label>
+                        <input type="file" class="form-control-file" id="import_file" name="import_file" accept=".csv" required>
+                        <small class="form-text text-muted">Upload a CSV file with member information.</small>
+                    </div>
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">CSV Format:</h6>
+                        <p class="mb-0">The CSV file should have the following columns: first_name, last_name, id_number, gender (M/F/O), date_of_birth (YYYY-MM-DD), phone_number, email, physical_address, occupation</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" name="import_members">Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize datatable
+        $('#membersTable').DataTable({
+            "paging": false,
+            "ordering": true,
+            "info": false,
+            "searching": false
+        });
+    });
+</script>
+{% endblock %} 

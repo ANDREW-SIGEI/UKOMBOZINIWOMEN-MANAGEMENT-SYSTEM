@@ -22,6 +22,7 @@
     
     .login-logo img {
         max-width: 150px;
+        border-radius: 10px;
     }
     
     .login-logo h2 {
@@ -89,7 +90,7 @@
 {% block content %}
 <div class="container login-container">
     <div class="login-logo">
-        <img src="{% static 'images/icon-160x160.png' %}" alt="Logo" onerror="this.src='https://via.placeholder.com/150x150?text=Ukombozini'">
+        <img src="{% static 'images/ukombozi-logo.png' %}" alt="Logo" onerror="this.onerror=null; this.src='{% static 'images/icon-160x160.png' %}'" style="max-width: 150px; border-radius: 10px;">
         <h2>UkomboziniWomen</h2>
     </div>
     

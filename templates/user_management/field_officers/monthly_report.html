@@ -1,0 +1,258 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Field Officer Monthly Report | UkomboziniWomen{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">
+                <i class="fas fa-file-alt me-2"></i> Field Officer Monthly Report
+            </h2>
+            <p class="lead">Monthly report for {{ month_name }} {{ year }}</p>
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <a href="{% url 'user_management:member_list' %}?role=field_officer" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Field Officers
+                    </a>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-success me-2" id="export-excel">
+                        <i class="fas fa-file-excel me-2"></i>Export to Excel
+                    </button>
+                    <button type="button" class="btn btn-danger" id="export-pdf">
+                        <i class="fas fa-file-pdf me-2"></i>Export to PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-table me-2"></i> Monthly Field Officer Report
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="monthly-report-table">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>DATE</th>
+                            <th>P.O NAME</th>
+                            <th>GROUPS NAMES</th>
+                            <th>TOTAL GROUPS ATTENDET</th>
+                            <th>ADMIN FOR EACH GROUP</th>
+                            <th>PROJECT REGISTRATION</th>
+                            <th>MEM.REG</th>
+                            <th>GROUP LOANS COLLECTED</th>
+                            <th>PROJECTS LOANS</th>
+                            <th>WELFARE FOR EACH GROUP</th>
+                            <th>TOTAL MONEY COLLECTED</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if reports %}
+                            {% for report in reports %}
+                                <tr>
+                                    <td>{{ report.date }}</td>
+                                    <td>{{ report.po_name }}</td>
+                                    <td>{{ report.group_names }}</td>
+                                    <td>{{ report.total_groups }}</td>
+                                    <td>{{ report.admin_for_group }}</td>
+                                    <td>{{ report.project_registration }}</td>
+                                    <td>{{ report.mem_reg }}</td>
+                                    <td>KSh {{ report.group_loans }}</td>
+                                    <td>KSh {{ report.project_loans }}</td>
+                                    <td>KSh {{ report.welfare }}</td>
+                                    <td>KSh {{ report.total_money }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="11" class="text-center">No reports found for this month</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                    <tfoot class="table-dark">
+                        <tr>
+                            <th colspan="3">Monthly Totals</th>
+                            <th>{{ total_groups }}</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th>KSh {{ total_group_loans }}</th>
+                            <th>KSh {{ total_project_loans }}</th>
+                            <th>KSh {{ total_welfare }}</th>
+                            <th>KSh {{ total_money }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Monthly Performance Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-8">Total Field Officer Visits:</div>
+                        <div class="col-4">{{ total_visits }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-8">Total Groups Visited:</div>
+                        <div class="col-4">{{ total_groups }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-8">Total Members Reached:</div>
+                        <div class="col-4">{{ total_attendees }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-8">Total Group Loans Collected:</div>
+                        <div class="col-4">KSh {{ total_group_loans }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-8">Total Project Loans Collected:</div>
+                        <div class="col-4">KSh {{ total_project_loans }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-8">Total Welfare Collected:</div>
+                        <div class="col-4">KSh {{ total_welfare }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">Total Money Collected:</div>
+                        <div class="col-4">KSh {{ total_money }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Monthly Collection Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="collections-chart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Daily Collections Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="daily-trend-chart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    $(document).ready(function() {
+        // Sample data - in a real scenario, this would come from the Django view context
+        const pieData = {
+            labels: ['Group Loans', 'Project Loans', 'Welfare'],
+            datasets: [{
+                data: [
+                    {% if total_group_loans %}{{ total_group_loans }}{% else %}0{% endif %}, 
+                    {% if total_project_loans %}{{ total_project_loans }}{% else %}0{% endif %}, 
+                    {% if total_welfare %}{{ total_welfare }}{% else %}0{% endif %}
+                ],
+                backgroundColor: ['#2E7D32', '#1976D2', '#FF9800'],
+                hoverOffset: 4
+            }]
+        };
+        
+        // Render pie chart for collections breakdown
+        const collectionsChart = new Chart(
+            document.getElementById('collections-chart'),
+            {
+                type: 'pie',
+                data: pieData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    }
+                }
+            }
+        );
+        
+        // Sample data for daily trend - in real scenario would come from context
+        const dailyTrendData = {
+            labels: [
+                {% for report in reports %}
+                    {% if report.date %}'{{ report.date }}'{% else %}'Date'{% endif %}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Daily Collections',
+                data: [
+                    {% for report in reports %}
+                        {% if report.total_money %}{{ report.total_money }}{% else %}0{% endif %}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                borderColor: '#2E7D32',
+                backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                fill: true,
+                tension: 0.3
+            }]
+        };
+        
+        // Render line chart for daily trends
+        const dailyTrendChart = new Chart(
+            document.getElementById('daily-trend-chart'),
+            {
+                type: 'line',
+                data: dailyTrendData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Amount (KSh)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    }
+                }
+            }
+        );
+        
+        // Export to Excel functionality
+        $('#export-excel').click(function() {
+            alert('Excel export functionality will be implemented server-side');
+        });
+        
+        // Export to PDF functionality
+        $('#export-pdf').click(function() {
+            alert('PDF export functionality will be implemented server-side');
+        });
+    });
+</script>
+{% endblock %} 

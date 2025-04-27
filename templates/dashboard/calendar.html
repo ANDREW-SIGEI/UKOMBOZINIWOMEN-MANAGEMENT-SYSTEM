@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Meeting Calendar | Ukombozini Women Management System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'vendor/fullcalendar/main.min.css' %}">
+<style>
+    .fc-event {
+        cursor: pointer;
+    }
+    .calendar-container {
+        height: 800px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Meeting Calendar</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard:meetings' %}">Meetings</a></li>
+                    <li class="breadcrumb-item active">Calendar</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Meeting Schedule</h3>
+                        <div class="card-tools">
+                            <a href="{% url 'dashboard:create_meeting' %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Add Meeting
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="calendar" class="calendar-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Meeting details modal -->
+<div class="modal fade" id="meeting-details-modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Meeting Details</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="meeting-details-content">
+                <!-- Content will be loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <a href="#" class="btn btn-primary" id="edit-meeting-link">Edit</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/moment/moment.min.js' %}"></script>
+<script src="{% static 'vendor/fullcalendar/main.min.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    // Parse the meeting data
+    var meetingsData = JSON.parse('{{ meetings_json|escapejs }}');
+    
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+        },
+        initialView: 'dayGridMonth',
+        themeSystem: 'bootstrap',
+        events: meetingsData,
+        eventClick: function(info) {
+            showMeetingDetails(info.event.id);
+        }
+    });
+    
+    calendar.render();
+});
+
+function showMeetingDetails(meetingId) {
+    // Load meeting details via AJAX
+    $.ajax({
+        url: '/dashboard/meetings/' + meetingId + '/details/',
+        type: 'GET',
+        success: function(data) {
+            $('#meeting-details-content').html(data);
+            $('#edit-meeting-link').attr('href', '/dashboard/meetings/' + meetingId + '/edit/');
+            $('#meeting-details-modal').modal('show');
+        },
+        error: function() {
+            alert('Error loading meeting details');
+        }
+    });
+}
+</script>
+{% endblock %} 
