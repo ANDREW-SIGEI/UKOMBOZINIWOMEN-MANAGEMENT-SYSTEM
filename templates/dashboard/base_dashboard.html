@@ -4,6 +4,7 @@
 {% block title %}Dashboard | UkomboziniWomen{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/logo-fallback.css' %}">
 <style>
     :root {
         --primary-color: #2E7D32;
@@ -185,8 +186,9 @@
         <div class="sidebar-header">
             <div class="d-flex align-items-center justify-content-between p-3">
                 <a href="{% url 'dashboard:index' %}" class="brand-logo">
-                    <img src="/static/images/ukombozi-logo.png" alt="Ukombozi Women Logo" class="img-fluid" style="max-height: 40px;">
-                    <span class="ms-2 d-none d-md-inline">Ukombozi Women</span>
+                    <!-- Logo with fallback -->
+                    <span class="logo-placeholder" id="logo-image"></span>
+                    <span class="logo-text">Ukombozi Women</span>
                 </a>
                 <button class="btn btn-link sidebar-toggle d-lg-none">
                     <i class="fas fa-chevron-left"></i>
@@ -226,19 +228,28 @@
                 </a>
                 <ul class="collapse list-unstyled {% if 'user_management' in active_menu %}show{% endif %}" id="userGroupSubmenu">
                     <li>
-                        <a href="#"><i class="fas fa-user nav-icon"></i> Member Management</a>
+                        <a href="{% url 'user_management:member_list' %}"><i class="fas fa-user nav-icon"></i> Member Management</a>
                     </li>
                     <li>
-                        <a href="#"><i class="fas fa-users-cog nav-icon"></i> Groups Registration</a>
+                        <a href="{% url 'user_management:group_list' %}"><i class="fas fa-users-cog nav-icon"></i> Groups Registration</a>
                     </li>
                     <li>
-                        <a href="#"><i class="fas fa-user-tie nav-icon"></i> Field Officers</a>
+                        <a href="{% url 'user_management:member_list' %}?role=field_officer"><i class="fas fa-user-tie nav-icon"></i> Field Officers</a>
+                    </li>
+                    <li class="bg-light">
+                        <a href="{% url 'user_management:field_officer_daily_report' %}" class="text-success"><i class="fas fa-clipboard-list nav-icon"></i> <strong>Field Officers Report Form</strong></a>
                     </li>
                     <li>
-                        <a href="#"><i class="fas fa-file-import nav-icon"></i> Import Members</a>
+                        <a href="{% url 'user_management:field_officer_monthly_report' %}"><i class="fas fa-chart-bar nav-icon"></i> Monthly Reports</a>
                     </li>
                     <li>
-                        <a href="#"><i class="fas fa-file-export nav-icon"></i> Export Members</a>
+                        <a href="{% url 'user_management:field_officer_report_table' %}"><i class="fas fa-table nav-icon"></i> Report Table</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'user_management:member_list' %}"><i class="fas fa-file-import nav-icon"></i> Import Members</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'user_management:member_list' %}"><i class="fas fa-file-export nav-icon"></i> Export Members</a>
                     </li>
                 </ul>
             </li>
@@ -376,11 +387,11 @@
                         <a href="{% url 'dashboard:meeting_create' %}" class="btn btn-sm btn-success mb-2">
                             <i class="fas fa-calendar-plus"></i> New Meeting
                         </a>
-                        <a href="#" class="btn btn-sm btn-info mb-2">
+                        <a href="{% url 'user_management:member_create' %}" class="btn btn-sm btn-info mb-2">
                             <i class="fas fa-user-plus"></i> Add Member
                         </a>
-                        <a href="#" class="btn btn-sm btn-warning mb-2">
-                            <i class="fas fa-money-bill-wave"></i> New Transaction
+                        <a href="{% url 'user_management:field_officer_daily_report' %}" class="btn btn-sm btn-warning mb-2">
+                            <i class="fas fa-file-alt"></i> Field Officers Report
                         </a>
                         <a href="{% url 'dashboard:activity_logs' %}" class="btn btn-sm btn-light">
                             <i class="fas fa-history"></i> Recent Activities
@@ -442,6 +453,17 @@
         $('#sidebarCollapse').on('click', function () {
             $('#sidebar, #content').toggleClass('active');
         });
+    });
+
+    // Add this script to handle logo loading errors
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create an image to test if the logo file exists
+        var img = new Image();
+        img.onerror = function() {
+            // If the image fails to load, add the 'image-fail' class
+            document.getElementById('logo-image').classList.add('image-fail');
+        };
+        img.src = "{% static 'images/ukombozi-logo.png' %}";
     });
 </script>
 {% endblock %} 

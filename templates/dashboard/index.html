@@ -11,6 +11,24 @@
         <div class="alert alert-info" role="alert">
             Connection Status: <span id="connection-status"><i class="fas fa-wifi"></i> Checking...</span>
         </div>
+        
+        <!-- Quick Access Button for Field Officer Report -->
+        <div class="alert alert-success" role="alert">
+            <h4 class="alert-heading"><i class="fas fa-clipboard-list"></i> Field Officer Daily Report</h4>
+            <p>Use the form below to submit your daily field officer activities and group visits.</p>
+            <hr>
+            <p class="mb-0">
+                <a href="{% url 'user_management:field_officer_daily_report' %}" class="btn btn-success">
+                    <i class="fas fa-plus-circle"></i> Fill Daily Report Form
+                </a>
+                <a href="{% url 'user_management:field_officer_monthly_report' %}" class="btn btn-outline-primary ml-2">
+                    <i class="fas fa-chart-bar"></i> View Monthly Reports
+                </a>
+                <a href="{% url 'user_management:field_officer_report_table' %}" class="btn btn-outline-warning ml-2">
+                    <i class="fas fa-table"></i> View Report Table
+                </a>
+            </p>
+        </div>
     </div>
 </div>
 

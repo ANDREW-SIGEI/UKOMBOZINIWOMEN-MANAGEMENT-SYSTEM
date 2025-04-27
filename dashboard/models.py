@@ -1,158 +1,103 @@
 from django.db import models
-from django.utils import timezone
 from django.contrib.auth.models import User
 from user_management.models import Member, Group, FieldOfficer
 
 class Meeting(models.Model):
-    """Model for scheduling group and member meetings."""
-    MEETING_STATUS_CHOICES = (
+    """Model representing a meeting for Ukombozini Women groups."""
+    
+    MEETING_TYPE_CHOICES = [
+        ('GENERAL', 'General Meeting'),
+        ('EXECUTIVE', 'Executive Meeting'),
+        ('TRAINING', 'Training Session'),
+        ('FIELD_VISIT', 'Field Visit'),
+        ('PROJECT', 'Project Meeting'),
+        ('OTHER', 'Other')
+    ]
+    
+    MEETING_STATUS_CHOICES = [
         ('SCHEDULED', 'Scheduled'),
+        ('IN_PROGRESS', 'In Progress'),
         ('COMPLETED', 'Completed'),
         ('CANCELLED', 'Cancelled'),
-        ('RESCHEDULED', 'Rescheduled'),
-        ('POSTPONED', 'Postponed'),
-    )
+        ('POSTPONED', 'Postponed')
+    ]
     
-    MEETING_TYPE_CHOICES = (
-        ('GROUP', 'Group Meeting'),
-        ('FIELD_VISIT', 'Field Visit'),
-        ('TRAINING', 'Training Session'),
-        ('COMMITTEE', 'Committee Meeting'),
-        ('GENERAL', 'General Meeting'),
-        ('OTHER', 'Other'),
-    )
-    
-    RECURRENCE_CHOICES = (
-        ('NONE', 'None'),
+    RECURRENCE_CHOICES = [
+        ('NONE', 'No Recurrence'),
         ('DAILY', 'Daily'),
         ('WEEKLY', 'Weekly'),
-        ('BIWEEKLY', 'Bi-weekly'),
+        ('BIWEEKLY', 'Biweekly'),
         ('MONTHLY', 'Monthly'),
-        ('QUARTERLY', 'Quarterly'),
-    )
+        ('QUARTERLY', 'Quarterly')
+    ]
     
-    # Basic meeting information
-    title = models.CharField(max_length=200)
-    description = models.TextField(blank=True, null=True)
-    meeting_type = models.CharField(max_length=20, choices=MEETING_TYPE_CHOICES, default='GROUP')
-    location = models.CharField(max_length=200)
-    
-    # Date and time
+    title = models.CharField(max_length=255)
+    meeting_type = models.CharField(max_length=20, choices=MEETING_TYPE_CHOICES, default='GENERAL')
     scheduled_date = models.DateField()
     start_time = models.TimeField()
-    end_time = models.TimeField()
-    
-    # Status and recurrence
+    end_time = models.TimeField(null=True, blank=True)
+    location = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=MEETING_STATUS_CHOICES, default='SCHEDULED')
-    recurrence = models.CharField(max_length=20, choices=RECURRENCE_CHOICES, default='NONE')
-    next_meeting_date = models.DateField(blank=True, null=True)
+    recurrence = models.CharField(max_length=25, choices=RECURRENCE_CHOICES, default='NONE')
+    next_meeting_date = models.DateField(null=True, blank=True)
     
-    # Relations to participants
+    # Relations
     organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='organized_meetings')
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True, 
-                            related_name='group_meetings')
-    members = models.ManyToManyField(Member, related_name='meetings', blank=True)
-    field_officers = models.ManyToManyField(FieldOfficer, related_name='meetings', blank=True)
+    members = models.ManyToManyField(Member, blank=True, related_name='meetings')
+    field_officers = models.ManyToManyField(FieldOfficer, blank=True, related_name='assigned_meetings')
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True, related_name='meetings')
     
-    # Tracking
-    created_date = models.DateTimeField(default=timezone.now)
-    modified_date = models.DateTimeField(auto_now=True)
-    previous_meeting = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
-                                       related_name='next_meetings')
+    # Tracking fields
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
-    # Agenda and minutes
-    agenda = models.TextField(blank=True, null=True)
-    minutes = models.TextField(blank=True, null=True)
+    # Meeting notes and attachments
+    minutes = models.TextField(blank=True)
     
-    # Notifications
-    reminder_sent = models.BooleanField(default=False)
+    # Agenda items stored as JSON
+    agenda_items = models.JSONField(default=list, blank=True)
+    
+    def __str__(self):
+        return self.title
     
     class Meta:
         ordering = ['-scheduled_date', 'start_time']
-    
-    def __str__(self):
-        return f"{self.title} - {self.scheduled_date}"
-    
-    def reschedule(self, new_date, new_start_time=None, new_end_time=None, reason=None):
-        """Reschedule this meeting and create a new one."""
-        # Keep a reference to the original meeting
-        original_meeting = self
-        
-        # Update the status of the original meeting
-        self.status = 'RESCHEDULED'
-        if reason:
-            self.description += f"\n\nRescheduled reason: {reason}"
-        self.save()
-        
-        # Create a new meeting with the same attributes but different date/time
-        new_meeting = Meeting.objects.create(
-            title=self.title,
-            description=self.description,
-            meeting_type=self.meeting_type,
-            location=self.location,
-            scheduled_date=new_date,
-            start_time=new_start_time or self.start_time,
-            end_time=new_end_time or self.end_time,
-            status='SCHEDULED',
-            recurrence=self.recurrence,
-            organizer=self.organizer,
-            group=self.group,
-            previous_meeting=self,
-            agenda=self.agenda,
-        )
-        
-        # Copy the M2M relationships
-        for member in self.members.all():
-            new_meeting.members.add(member)
-        
-        for officer in self.field_officers.all():
-            new_meeting.field_officers.add(officer)
-        
-        return new_meeting
-    
-    def get_attendees_count(self):
-        """Get the total count of attendees (members + field officers)."""
-        return self.members.count() + self.field_officers.count()
-    
-    def is_upcoming(self):
-        """Check if the meeting is upcoming."""
-        return self.scheduled_date >= timezone.now().date() and self.status == 'SCHEDULED'
-    
-    def is_past_due(self):
-        """Check if the meeting is past due."""
-        return self.scheduled_date < timezone.now().date() and self.status == 'SCHEDULED'
+
 
 class MeetingAttendance(models.Model):
-    """Records attendance for meetings."""
+    """Model to track member attendance at meetings."""
+    
+    ATTENDANCE_STATUS_CHOICES = [
+        ('PRESENT', 'Present'),
+        ('ABSENT', 'Absent'),
+        ('EXCUSED', 'Excused'),
+        ('LATE', 'Late')
+    ]
+    
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='attendance_records')
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True)
-    field_officer = models.ForeignKey(FieldOfficer, on_delete=models.CASCADE, null=True, blank=True)
-    is_present = models.BooleanField(default=False)
-    arrival_time = models.TimeField(null=True, blank=True)
-    departure_time = models.TimeField(null=True, blank=True)
-    notes = models.TextField(blank=True, null=True)
-    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='attendance_records')
+    status = models.CharField(max_length=10, choices=ATTENDANCE_STATUS_CHOICES, default='ABSENT')
+    time_recorded = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='recorded_attendance')
     
     class Meta:
-        unique_together = [['meeting', 'member'], ['meeting', 'field_officer']]
+        unique_together = ['meeting', 'member']
         
     def __str__(self):
-        attendee = self.member.get_full_name() if self.member else self.field_officer.user.get_full_name()
-        status = "Present" if self.is_present else "Absent"
-        return f"{attendee} - {self.meeting.title} - {status}"
+        return f"{self.member.full_name} - {self.meeting.title} - {self.status}"
 
-class AgendaItem(models.Model):
-    """Individual agenda items for meetings."""
-    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='agenda_items')
-    title = models.CharField(max_length=200)
-    description = models.TextField(blank=True, null=True)
-    time_allocation = models.IntegerField(help_text="Time in minutes", blank=True, null=True)
-    order = models.PositiveIntegerField(default=0)
-    created_date = models.DateTimeField(auto_now_add=True)
-    modified_date = models.DateTimeField(auto_now=True)
+
+class MeetingAttachment(models.Model):
+    """Model for meeting attachments like documents, photos, etc."""
     
-    class Meta:
-        ordering = ['order', 'created_date']
-        
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='attachments')
+    file = models.FileField(upload_to='meeting_attachments/')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
     def __str__(self):
-        return f"{self.title} - {self.meeting.title}"
+        return self.title 

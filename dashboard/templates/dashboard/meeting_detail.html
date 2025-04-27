@@ -5,434 +5,450 @@
 
 {% block extra_css %}
 <style>
-  .meeting-header {
-    background-color: #f8f9fa;
-    border-radius: 5px;
-    padding: 20px;
-    margin-bottom: 30px;
-  }
-  .meeting-status {
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-weight: 500;
-  }
-  .status-scheduled { background-color: #cff4fc; color: #055160; }
-  .status-completed { background-color: #d1e7dd; color: #0f5132; }
-  .status-canceled { background-color: #f8d7da; color: #842029; }
-  .status-postponed { background-color: #fff3cd; color: #664d03; }
-  
-  .info-card {
-    height: 100%;
-    transition: all 0.2s;
-  }
-  .info-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  }
-  .agenda-item {
-    border-left: 3px solid #007bff;
-    padding-left: 15px;
-    margin-bottom: 15px;
-    position: relative;
-  }
-  .agenda-item:last-child {
-    margin-bottom: 0;
-  }
-  .agenda-item-time {
-    font-size: 0.9rem;
-    color: #6c757d;
-    margin-bottom: 5px;
-  }
-  .attendee-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .attendee-badge {
-    background-color: #e9ecef;
-    border-radius: 50px;
-    padding: 6px 12px;
-    font-size: 0.9rem;
-  }
-  .attendee-badge.confirmed {
-    background-color: #d1e7dd;
-    color: #0f5132;
-  }
-  .attendee-badge.tentative {
-    background-color: #fff3cd;
-    color: #664d03;
-  }
-  .attendee-badge.declined {
-    background-color: #f8d7da;
-    color: #842029;
-  }
-  .attendee-badge.no-response {
-    background-color: #e9ecef;
-    color: #6c757d;
-  }
-  .attachment-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 8px;
-    border-radius: 4px;
-    background-color: #f8f9fa;
-  }
-  .attachment-icon {
-    font-size: 1.5rem;
-    margin-right: 15px;
-    color: #6c757d;
-  }
-  .attachment-details {
-    flex-grow: 1;
-  }
-  .attachment-name {
-    font-weight: 500;
-    margin-bottom: 0;
-  }
-  .attachment-meta {
-    font-size: 0.8rem;
-    color: #6c757d;
-  }
-  .action-buttons {
-    margin-bottom: 30px;
-  }
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 0.25em 0.75em;
+        border-radius: 20px;
+    }
+    
+    .status-scheduled {
+        background-color: #4e73df;
+        color: white;
+    }
+    
+    .status-in-progress {
+        background-color: #f6c23e;
+        color: #212529;
+    }
+    
+    .status-completed {
+        background-color: #1cc88a;
+        color: white;
+    }
+    
+    .status-cancelled {
+        background-color: #e74a3b;
+        color: white;
+    }
+    
+    .status-postponed {
+        background-color: #5a5c69;
+        color: white;
+    }
+    
+    .agenda-item {
+        background-color: #f8f9fc;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        border-left: 4px solid #4e73df;
+    }
+    
+    .agenda-time {
+        color: #5a5c69;
+        font-size: 0.9rem;
+    }
+    
+    .action-buttons {
+        position: sticky;
+        bottom: 20px;
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        z-index: 100;
+    }
+    
+    .attendance-indicator {
+        width: 12px;
+        height: 12px;
+        display: inline-block;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+    
+    .attendance-present {
+        background-color: #1cc88a;
+    }
+    
+    .attendance-absent {
+        background-color: #e74a3b;
+    }
+    
+    .attendance-excused {
+        background-color: #f6c23e;
+    }
+    
+    .attendance-late {
+        background-color: #36b9cc;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'dashboard:meeting_list' %}">Meetings</a></li>
-      <li class="breadcrumb-item active">{{ meeting.title }}</li>
-    </ol>
-  </nav>
-  
-  <!-- Meeting Header -->
-  <div class="meeting-header">
-    <div class="row">
-      <div class="col-md-8">
-        <h1 class="mb-2">{{ meeting.title }}</h1>
-        <div class="d-flex align-items-center mb-3">
-          <span class="badge meeting-status status-{{ meeting.status }}">
-            {{ meeting.get_status_display }}
-          </span>
-          <span class="ml-3 text-muted">
-            <i class="fas fa-tag mr-1"></i> {{ meeting.get_meeting_type_display }}
-          </span>
-        </div>
-        <p class="mb-0">{{ meeting.description }}</p>
-      </div>
-      <div class="col-md-4 d-flex justify-content-md-end mt-3 mt-md-0">
-        <div class="action-buttons">
-          {% if meeting.status == 'scheduled' %}
-            <div class="btn-group">
-              <a href="{% url 'dashboard:meeting_update' meeting.id %}" class="btn btn-primary">
-                <i class="fas fa-edit"></i> Edit
-              </a>
-              <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="sr-only">Toggle Dropdown</span>
-              </button>
-              <div class="dropdown-menu dropdown-menu-right">
-                <h6 class="dropdown-header">Change Status</h6>
-                <a class="dropdown-item" href="{% url 'dashboard:meeting_complete' meeting.id %}">
-                  <i class="fas fa-check text-success"></i> Mark Complete
-                </a>
-                <a class="dropdown-item" href="{% url 'dashboard:meeting_cancel' meeting.id %}">
-                  <i class="fas fa-ban text-danger"></i> Cancel Meeting
-                </a>
-                <a class="dropdown-item" href="{% url 'dashboard:meeting_postpone' meeting.id %}">
-                  <i class="fas fa-clock text-warning"></i> Postpone Meeting
-                </a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item text-danger" href="#" data-toggle="modal" data-target="#deleteModal">
-                  <i class="fas fa-trash"></i> Delete
-                </a>
-              </div>
-            </div>
-          {% else %}
-            <a href="{% url 'dashboard:meeting_update' meeting.id %}" class="btn btn-outline-secondary">
-              <i class="fas fa-edit"></i> Edit
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            Meeting Details
+            <span class="status-badge status-{{ meeting.status|lower }} ml-2">{{ meeting.get_status_display }}</span>
+        </h1>
+        <div>
+            <a href="{% url 'dashboard:meeting_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Meetings
             </a>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="row mb-4">
-    <!-- Meeting Information -->
-    <div class="col-md-6">
-      <div class="card info-card mb-4">
-        <div class="card-header bg-primary text-white">
-          <h5 class="mb-0"><i class="fas fa-info-circle mr-2"></i>Meeting Information</h5>
-        </div>
-        <div class="card-body">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span><i class="far fa-calendar-alt mr-2"></i>Date:</span>
-              <strong>{{ meeting.scheduled_date|date:"l, F d, Y" }}</strong>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span><i class="far fa-clock mr-2"></i>Time:</span>
-              <strong>{{ meeting.start_time }} - {{ meeting.end_time }}</strong>
-            </li>
-            {% if meeting.location %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span><i class="fas fa-map-marker-alt mr-2"></i>Location:</span>
-                <strong>{{ meeting.location }}</strong>
-              </li>
-            {% endif %}
-            {% if meeting.virtual_meeting_link %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span><i class="fas fa-video mr-2"></i>Virtual Link:</span>
-                <a href="{{ meeting.virtual_meeting_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                  <i class="fas fa-external-link-alt mr-1"></i>Join Meeting
+            {% if can_edit %}
+                <a href="{% url 'dashboard:meeting_edit' meeting.id %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm ml-2">
+                    <i class="fas fa-edit fa-sm text-white-50"></i> Edit Meeting
                 </a>
-              </li>
             {% endif %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span><i class="fas fa-users mr-2"></i>Attendees:</span>
-              <strong>{{ meeting.attendees.count }}</strong>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span><i class="fas fa-user mr-2"></i>Created by:</span>
-              <strong>{{ meeting.created_by.get_full_name }}</strong>
-            </li>
-          </ul>
         </div>
-      </div>
     </div>
-    
-    <!-- Agenda -->
-    <div class="col-md-6">
-      <div class="card info-card mb-4">
-        <div class="card-header bg-info text-white">
-          <h5 class="mb-0"><i class="fas fa-list-ul mr-2"></i>Agenda</h5>
-        </div>
-        <div class="card-body">
-          {% if meeting.agenda_items.all %}
-            <div class="agenda-items">
-              {% for item in meeting.agenda_items.all %}
-                <div class="agenda-item">
-                  {% if item.time_allocation %}
-                    <div class="agenda-item-time">
-                      <i class="far fa-clock mr-1"></i> {{ item.time_allocation }} minutes
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Meeting Details Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ meeting.title }}</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong><i class="fas fa-calendar-day text-gray-500 mr-2"></i> Date:</strong>
+                                {{ meeting.scheduled_date|date:"F d, Y" }}
+                            </div>
+                            <div class="mb-3">
+                                <strong><i class="fas fa-clock text-gray-500 mr-2"></i> Time:</strong>
+                                {{ meeting.start_time|time:"h:i A" }}
+                                {% if meeting.end_time %} - {{ meeting.end_time|time:"h:i A" }}{% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <strong><i class="fas fa-map-marker-alt text-gray-500 mr-2"></i> Location:</strong>
+                                {{ meeting.location }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong><i class="fas fa-tag text-gray-500 mr-2"></i> Type:</strong>
+                                {{ meeting.get_meeting_type_display }}
+                            </div>
+                            <div class="mb-3">
+                                <strong><i class="fas fa-user text-gray-500 mr-2"></i> Organizer:</strong>
+                                {{ meeting.organizer.get_full_name|default:meeting.organizer.username }}
+                            </div>
+                            {% if meeting.group %}
+                                <div class="mb-3">
+                                    <strong><i class="fas fa-users text-gray-500 mr-2"></i> Group:</strong>
+                                    {{ meeting.group.name }}
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
-                  {% endif %}
-                  <h5 class="mb-1">{{ item.title }}</h5>
-                  {% if item.description %}
-                    <p class="mb-0 text-muted">{{ item.description }}</p>
-                  {% endif %}
-                </div>
-              {% endfor %}
-            </div>
-          {% else %}
-            <div class="alert alert-light text-center">
-              <i class="fas fa-info-circle mr-2"></i>No agenda items have been added.
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="row mb-4">
-    <!-- Attendees -->
-    <div class="col-md-6">
-      <div class="card info-card mb-4">
-        <div class="card-header bg-success text-white">
-          <h5 class="mb-0"><i class="fas fa-users mr-2"></i>Attendees</h5>
-        </div>
-        <div class="card-body">
-          {% if meeting.attendees.all %}
-            <div class="attendee-list">
-              {% for attendee in meeting.attendees.all %}
-                <div class="attendee-badge {{ attendee.response_status|default:'no-response' }}">
-                  {{ attendee.member.get_full_name }}
-                  {% if attendee.response_status == 'confirmed' %}
-                    <i class="fas fa-check-circle ml-1 text-success"></i>
-                  {% elif attendee.response_status == 'tentative' %}
-                    <i class="fas fa-question-circle ml-1 text-warning"></i>
-                  {% elif attendee.response_status == 'declined' %}
-                    <i class="fas fa-times-circle ml-1 text-danger"></i>
-                  {% else %}
-                    <i class="fas fa-circle ml-1 text-secondary"></i>
-                  {% endif %}
-                </div>
-              {% endfor %}
-            </div>
-            {% if meeting.status == 'scheduled' %}
-              <div class="mt-3">
-                <a href="{% url 'dashboard:meeting_attendees' meeting.id %}" class="btn btn-sm btn-outline-primary">
-                  <i class="fas fa-user-plus mr-1"></i>Manage Attendees
-                </a>
-              </div>
-            {% endif %}
-          {% else %}
-            <div class="alert alert-light text-center">
-              <i class="fas fa-info-circle mr-2"></i>No attendees have been added.
-              {% if meeting.status == 'scheduled' %}
-                <div class="mt-2">
-                  <a href="{% url 'dashboard:meeting_attendees' meeting.id %}" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-user-plus mr-1"></i>Add Attendees
-                  </a>
-                </div>
-              {% endif %}
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-    
-    <!-- Attachments -->
-    <div class="col-md-6">
-      <div class="card info-card mb-4">
-        <div class="card-header bg-secondary text-white">
-          <h5 class="mb-0"><i class="fas fa-paperclip mr-2"></i>Attachments</h5>
-        </div>
-        <div class="card-body">
-          {% if meeting.attachments.all %}
-            <div class="attachment-list">
-              {% for attachment in meeting.attachments.all %}
-                <div class="attachment-item">
-                  <div class="attachment-icon">
-                    {% if attachment.file_type == 'pdf' %}
-                      <i class="far fa-file-pdf"></i>
-                    {% elif attachment.file_type == 'doc' or attachment.file_type == 'docx' %}
-                      <i class="far fa-file-word"></i>
-                    {% elif attachment.file_type == 'xls' or attachment.file_type == 'xlsx' %}
-                      <i class="far fa-file-excel"></i>
-                    {% elif attachment.file_type == 'ppt' or attachment.file_type == 'pptx' %}
-                      <i class="far fa-file-powerpoint"></i>
-                    {% elif attachment.file_type == 'jpg' or attachment.file_type == 'png' or attachment.file_type == 'gif' %}
-                      <i class="far fa-file-image"></i>
-                    {% else %}
-                      <i class="far fa-file"></i>
+                    
+                    {% if meeting.description %}
+                        <div class="mb-4">
+                            <strong>Description:</strong>
+                            <p class="mt-2">{{ meeting.description|linebreaks }}</p>
+                        </div>
                     {% endif %}
-                  </div>
-                  <div class="attachment-details">
-                    <h6 class="attachment-name">{{ attachment.name }}</h6>
-                    <div class="attachment-meta">
-                      {{ attachment.file.size|filesizeformat }} • 
-                      Added {{ attachment.uploaded_at|timesince }} ago
+                    
+                    {% if meeting.minutes %}
+                        <div class="mb-4">
+                            <strong>Meeting Minutes:</strong>
+                            <div class="card bg-light mt-2">
+                                <div class="card-body">
+                                    {{ meeting.minutes|linebreaks }}
+                                </div>
+                            </div>
+                        </div>
+                    {% elif meeting.status == 'COMPLETED' and can_edit %}
+                        <div class="mb-4">
+                            <strong>Meeting Minutes:</strong>
+                            <p class="text-muted mt-2">No minutes have been recorded yet. 
+                                <a href="{% url 'dashboard:meeting_edit' meeting.id %}">Add minutes</a>
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Agenda Items Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Agenda Items</h6>
+                </div>
+                <div class="card-body">
+                    {% if meeting.agenda_items %}
+                        {% for item in meeting.agenda_items %}
+                            <div class="agenda-item">
+                                <div class="row">
+                                    {% if item.time %}
+                                        <div class="col-md-2">
+                                            <div class="agenda-time">{{ item.time }}</div>
+                                        </div>
+                                        <div class="col-md-10">
+                                    {% else %}
+                                        <div class="col-md-12">
+                                    {% endif %}
+                                            <h5>{{ item.title }}</h5>
+                                            
+                                            {% if item.presenter %}
+                                                <div><strong>Presenter:</strong> {{ item.presenter }}</div>
+                                            {% endif %}
+                                            
+                                            {% if item.duration %}
+                                                <div><strong>Duration:</strong> {{ item.duration }} minutes</div>
+                                            {% endif %}
+                                            
+                                            {% if item.description %}
+                                                <div class="mt-2">{{ item.description }}</div>
+                                            {% endif %}
+                                        </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted py-3">
+                            <i class="fas fa-clipboard-list fa-2x mb-3 text-gray-300"></i><br>
+                            No agenda items for this meeting
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Attachments Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Attachments</h6>
+                    {% if can_edit %}
+                        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#addAttachmentModal">
+                            <i class="fas fa-plus fa-sm"></i> Add Attachment
+                        </button>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Uploaded By</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attachment in meeting.attachments.all %}
+                                    <tr>
+                                        <td>{{ attachment.title }}</td>
+                                        <td>{{ attachment.description|truncatechars:50 }}</td>
+                                        <td>{{ attachment.uploaded_by.get_full_name|default:attachment.uploaded_by.username }}</td>
+                                        <td>{{ attachment.uploaded_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            <a href="{{ attachment.file.url }}" class="btn btn-sm btn-info" target="_blank">
+                                                <i class="fas fa-download"></i> Download
+                                            </a>
+                                            {% if can_edit %}
+                                                <a href="{% url 'dashboard:meeting_remove_attachment' meeting.id attachment.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this attachment?');">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">No attachments uploaded</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                  </div>
-                  <div>
-                    <a href="{{ attachment.file.url }}" class="btn btn-sm btn-outline-primary" download>
-                      <i class="fas fa-download"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Attendance Summary Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Attendance Summary</h6>
+                    {% if meeting.status == 'SCHEDULED' or meeting.status == 'IN_PROGRESS' %}
+                        <a href="{% url 'dashboard:meeting_attendance' meeting.id %}" class="btn btn-sm btn-success">
+                            <i class="fas fa-clipboard-check fa-sm"></i> Record Attendance
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <canvas id="attendanceChart" width="100%" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Status</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in attendance_records %}
+                                    <tr>
+                                        <td>{{ record.member.full_name }}</td>
+                                        <td>
+                                            <span class="attendance-indicator attendance-{{ record.status|lower }}"></span>
+                                            {{ record.get_status_display }}
+                                        </td>
+                                        <td>{{ record.notes|default:"-" }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center">No attendance records yet</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Field Officers Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Field Officers</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for officer in meeting.field_officers.all %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ officer.user.get_full_name|default:officer.user.username }}
+                                <span class="badge badge-primary badge-pill">
+                                    {{ officer.phone_number }}
+                                </span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-center text-muted">No field officers assigned</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action buttons for mobile (sticky footer) -->
+    <div class="d-block d-sm-none action-buttons">
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'dashboard:meeting_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+            <div>
+                {% if can_edit %}
+                    <a href="{% url 'dashboard:meeting_edit' meeting.id %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit
                     </a>
-                  </div>
-                </div>
-              {% endfor %}
+                {% endif %}
+                {% if meeting.status == 'SCHEDULED' %}
+                    <a href="{% url 'dashboard:meeting_attendance' meeting.id %}" class="btn btn-success">
+                        <i class="fas fa-clipboard-check"></i> Attendance
+                    </a>
+                {% endif %}
             </div>
-            {% if meeting.status == 'scheduled' %}
-              <div class="mt-3">
-                <button class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#addAttachmentModal">
-                  <i class="fas fa-plus mr-1"></i>Add Attachment
-                </button>
-              </div>
-            {% endif %}
-          {% else %}
-            <div class="alert alert-light text-center">
-              <i class="fas fa-info-circle mr-2"></i>No attachments have been added.
-              {% if meeting.status == 'scheduled' %}
-                <div class="mt-2">
-                  <button class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#addAttachmentModal">
-                    <i class="fas fa-plus mr-1"></i>Add Attachment
-                  </button>
-                </div>
-              {% endif %}
-            </div>
-          {% endif %}
         </div>
-      </div>
     </div>
-  </div>
-  
-  <!-- Notes Section -->
-  {% if meeting.notes %}
-    <div class="card mb-4">
-      <div class="card-header bg-dark text-white">
-        <h5 class="mb-0"><i class="fas fa-sticky-note mr-2"></i>Meeting Notes</h5>
-      </div>
-      <div class="card-body">
-        {{ meeting.notes|linebreaks }}
-      </div>
-    </div>
-  {% endif %}
-  
-  <!-- Delete Modal -->
-  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Delete Meeting</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          Are you sure you want to delete the meeting "{{ meeting.title }}"? This action cannot be undone.
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-          <form action="{% url 'dashboard:meeting_delete' meeting.id %}" method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Delete</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Add Attachment Modal -->
-  <div class="modal fade" id="addAttachmentModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Add Attachment</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <form action="{% url 'dashboard:meeting_add_attachment' meeting.id %}" method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          <div class="modal-body">
-            <div class="form-group">
-              <label for="attachment_name">Name</label>
-              <input type="text" class="form-control" id="attachment_name" name="name" required>
-            </div>
-            <div class="form-group">
-              <label for="attachment_file">File</label>
-              <div class="custom-file">
-                <input type="file" class="custom-file-input" id="attachment_file" name="file" required>
-                <label class="custom-file-label" for="attachment_file">Choose file</label>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Upload</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
 </div>
+
+<!-- Add Attachment Modal -->
+{% if can_edit %}
+    <div class="modal fade" id="addAttachmentModal" tabindex="-1" aria-labelledby="addAttachmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addAttachmentModalLabel">Add Attachment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" enctype="multipart/form-data" action="{% url 'dashboard:meeting_add_attachment' meeting.id %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="attachment_title">Title</label>
+                            <input type="text" class="form-control" id="attachment_title" name="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="attachment_description">Description (optional)</label>
+                            <textarea class="form-control" id="attachment_description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="attachment_file">File</label>
+                            <input type="file" class="form-control-file" id="attachment_file" name="file" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Upload Attachment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'vendor/chart.js/Chart.min.js' %}"></script>
 <script>
-  $(document).ready(function() {
-    // File input display
-    $(".custom-file-input").on("change", function() {
-      var fileName = $(this).val().split("\\").pop();
-      $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+    // Set up attendance chart
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById('attendanceChart');
+        
+        {% if attendance_records %}
+            // Count attendance status
+            var present = {{ attendance_records.filter(status='PRESENT').count }};
+            var absent = {{ attendance_records.filter(status='ABSENT').count }};
+            var excused = {{ attendance_records.filter(status='EXCUSED').count }};
+            var late = {{ attendance_records.filter(status='LATE').count }};
+            
+            var attendanceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Present', 'Absent', 'Excused', 'Late'],
+                    datasets: [{
+                        data: [present, absent, excused, late],
+                        backgroundColor: ['#1cc88a', '#e74a3b', '#f6c23e', '#36b9cc'],
+                        hoverBackgroundColor: ['#17a673', '#be2617', '#dda20a', '#2c9faf'],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)"
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        caretPadding: 10
+                    },
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    },
+                    cutoutPercentage: 70
+                }
+            });
+        {% else %}
+            // No attendance data
+            ctx.parentNode.innerHTML = '<div class="text-center text-muted py-4"><i class="fas fa-clipboard fa-2x mb-3 text-gray-300"></i><br>No attendance data available</div>';
+        {% endif %}
     });
-  });
 </script>
 {% endblock %} 

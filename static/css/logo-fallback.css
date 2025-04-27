@@ -1,0 +1,37 @@
+.brand-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.brand-logo .logo-text {
+    font-family: 'Arial', sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    margin-left: 10px;
+}
+
+.logo-placeholder {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    background-image: url('/static/images/ukombozi-logo.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 40px;
+    color: transparent;
+    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+}
+
+/* Fallback if image fails to load */
+.logo-placeholder.image-fail::before {
+    content: "UW";
+    color: white;
+    background-color: #4CAF50;
+} 

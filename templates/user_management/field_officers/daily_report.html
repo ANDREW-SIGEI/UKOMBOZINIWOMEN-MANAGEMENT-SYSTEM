@@ -1,0 +1,319 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Field Officer Daily Report | UkomboziniWomen{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'js/offline-storage.js' %}"></script>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">
+                <i class="fas fa-file-alt me-2"></i> Field Officer Daily Report
+            </h2>
+            <p class="lead">Complete the daily activities report form below.</p>
+            <div class="alert alert-info mb-3">
+                <i class="fas fa-info-circle me-2"></i> <strong>Offline Mode Available:</strong> You can now fill out and submit this form even when offline. Your data will be saved on your device and automatically synced when you reconnect.
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-table me-2"></i> Daily Report Entry Form
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="post" id="dailyReportForm" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="report_date" class="fw-bold text-primary">DATE</label>
+                            <input type="date" class="form-control" id="report_date" name="report_date" value="{{ today_date|date:'Y-m-d' }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label for="po_name" class="fw-bold text-primary">P.O NAME</label>
+                            <input type="text" class="form-control" id="po_name" name="po_name" value="{{ request.user.get_full_name }}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="group-entries">
+                    <div class="group-entry border rounded p-3 mb-3 bg-light">
+                        <!-- Group Identification Section -->
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <h6 class="border-bottom pb-2 mb-3">Group Information</h6>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">GROUP NAME</label>
+                                    <input type="text" class="form-control" name="group_name[]" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">VENUE</label>
+                                    <input type="text" class="form-control" name="visit_venue[]">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">TIME</label>
+                                    <input type="time" class="form-control" name="visit_time[]">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">TOTAL ATTENDANCE</label>
+                                    <input type="number" class="form-control" name="total_attendet[]" min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">GROUP ADMIN NAME</label>
+                                    <input type="text" class="form-control" name="admin_for_group[]" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Loan Information Section -->
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <h6 class="border-bottom pb-2 mb-3 mt-4">Loan Information</h6>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">LONG TERM LOAN</label>
+                                    <input type="number" class="form-control money-input" name="long_term_loan[]" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">SHORT TERM LOAN</label>
+                                    <input type="number" class="form-control money-input" name="short_term_loan[]" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">SAVINGS BEFORE</label>
+                                    <input type="number" class="form-control money-input" name="savings_before[]" min="0" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">TOTAL LOAN REPAID</label>
+                                    <input type="number" class="form-control money-input loan-repaid" name="total_loan_repaid[]" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">PRINCIPLE</label>
+                                    <input type="number" class="form-control money-input" name="loan_principle[]" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">LOAN INTEREST</label>
+                                    <input type="number" class="form-control money-input" name="loan_interest[]" min="0" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">SHORT TERM LOAN REPAID</label>
+                                    <input type="number" class="form-control money-input" name="short_term_loan_repaid[]" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">PROJECT REGISTRATION</label>
+                                    <input type="text" class="form-control" name="project_registration[]">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Savings Section -->
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <h6 class="border-bottom pb-2 mb-3 mt-4">Savings & Collections</h6>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">SAVINGS THIS MONTH</label>
+                                    <input type="number" class="form-control money-input savings-input" name="savings_this_month[]" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">WELFARE</label>
+                                    <input type="number" class="form-control money-input savings-input" name="welfare_for_group[]" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">PROJECT</label>
+                                    <input type="number" class="form-control money-input savings-input" name="project[]" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">FINES & CHARGES</label>
+                                    <input type="number" class="form-control money-input savings-input" name="fines_and_charges[]" min="0" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Registration/Members/Totals -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">MEM.REG</label>
+                                    <input type="text" class="form-control" name="mem_reg[]">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">TOTAL SAVINGS</label>
+                                    <input type="number" class="form-control money-input total-savings" name="total_savings[]" min="0" step="0.01" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="fw-bold text-primary">TOTAL COLLECTED</label>
+                                    <input type="number" class="form-control money-input total-money" name="total_money_collected[]" min="0" step="0.01" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <button type="button" id="add-group" class="btn btn-outline-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Add Another Group
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">Report Summary</h6>
+                                <div class="row mb-2">
+                                    <div class="col-8">Total Groups Visited:</div>
+                                    <div class="col-4" id="summary-groups">0</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-8">Total Attendees:</div>
+                                    <div class="col-4" id="summary-attendees">0</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-8">Total Loans Repaid:</div>
+                                    <div class="col-4" id="summary-loans">KSh 0.00</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-8">Total Savings:</div>
+                                    <div class="col-4" id="summary-savings">KSh 0.00</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-8">Total Money Collected:</div>
+                                    <div class="col-4" id="summary-money">KSh 0.00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-2"></i>Save Daily Report
+                        </button>
+                        <button type="button" class="btn btn-info ms-2" id="generate-report">
+                            <i class="fas fa-file-pdf me-2"></i>Generate PDF Report
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="mt-5">
+        <h3>Monthly Reports</h3>
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Generate Monthly Report</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{% url 'user_management:field_officer_monthly_report' %}">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="month">Select Month</label>
+                                <select class="form-control" id="month" name="month" required>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="year">Select Year</label>
+                                <select class="form-control" id="year" name="year" required>
+                                    <option value="2023">2023</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025" selected>2025</option>
+                                    <option value="2026">2026</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-primary d-block">
+                                    <i class="fas fa-search me-2"></i>Generate Monthly Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/daily-report.js' %}"></script>
+{% endblock %} 

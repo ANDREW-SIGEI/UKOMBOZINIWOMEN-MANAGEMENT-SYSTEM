@@ -1,500 +1,420 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load crispy_forms_tags %}
 
-{% block title %}{% if form.instance.id %}Edit Meeting{% else %}Create Meeting{% endif %} | Ukombozini Women{% endblock %}
+{% block title %}{% if form.instance.id %}Edit{% else %}Create{% endif %} Meeting | Ukombozini Women{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+<link href="{% static 'vendor/select2/css/select2.min.css' %}" rel="stylesheet">
+<link href="{% static 'vendor/select2-bootstrap4-theme/select2-bootstrap4.min.css' %}" rel="stylesheet">
 <style>
-  .form-section {
-    background-color: #f8f9fa;
-    border-radius: 5px;
-    padding: 20px;
-    margin-bottom: 30px;
-  }
-  .form-section-title {
-    border-bottom: 2px solid #dee2e6;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-  }
-  .agenda-item {
-    background-color: #fff;
-    border: 1px solid #e9ecef;
-    border-radius: 5px;
-    padding: 15px;
-    margin-bottom: 15px;
-    position: relative;
-  }
-  .remove-item-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-  }
-  .add-item-btn {
-    margin-top: 10px;
-  }
-  .form-buttons {
-    margin-top: 30px;
-  }
-  .select2-container .select2-selection--multiple {
-    min-height: 38px;
-  }
-  .select2-container--default .select2-selection--multiple {
-    border-color: #ced4da;
-  }
-  .flatpickr-input[readonly] {
-    background-color: #fff;
-  }
-  #empty-agenda-message, #empty-attendees-message {
-    display: none;
-  }
-  .drag-handle {
-    cursor: move;
-    color: #adb5bd;
-    margin-right: 10px;
-  }
+    .agenda-item {
+        background-color: #f9f9f9;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border-left: 4px solid #4e73df;
+        position: relative;
+    }
+    
+    .delete-agenda-item {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: #e74a3b;
+        cursor: pointer;
+    }
+    
+    .agenda-time {
+        color: #5a5c69;
+        font-size: 0.9rem;
+    }
+    
+    .drag-handle {
+        cursor: move;
+        margin-right: 10px;
+        color: #4e73df;
+    }
+    
+    #agenda-items-container:empty + #empty-agenda-message {
+        display: block;
+    }
+    
+    #empty-agenda-message {
+        display: none;
+        padding: 20px;
+        text-align: center;
+        background-color: #f1f1f1;
+        border-radius: 5px;
+        color: #6c757d;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'dashboard:meeting_list' %}">Meetings</a></li>
-      <li class="breadcrumb-item active">{% if form.instance.id %}Edit{% else %}Create{% endif %} Meeting</li>
-    </ol>
-  </nav>
-  
-  <!-- Form Title -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>{% if form.instance.id %}Edit Meeting{% else %}Create New Meeting{% endif %}</h1>
-    {% if form.instance.id %}
-      <div class="btn-group">
-        <a href="{% url 'dashboard:meeting_detail' form.instance.id %}" class="btn btn-outline-secondary">
-          <i class="fas fa-arrow-left"></i> Back to Meeting
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            {% if form.instance.id %}Edit{% else %}Create{% endif %} Meeting
+        </h1>
+        <a href="{% url 'dashboard:meeting_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Meetings
         </a>
-      </div>
-    {% endif %}
-  </div>
-  
-  <form method="post" enctype="multipart/form-data" id="meeting-form" data-is-new="{% if not form.instance.id %}true{% else %}false{% endif %}">
-    {% csrf_token %}
-    
-    <!-- Basic Information Section -->
-    <div class="form-section">
-      <h4 class="form-section-title"><i class="fas fa-info-circle mr-2"></i>Basic Information</h4>
-      <div class="row">
-        <div class="col-md-12">
-          {{ form.title|as_crispy_field }}
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-6">
-          {{ form.meeting_type|as_crispy_field }}
-        </div>
-        <div class="col-md-6">
-          {{ form.status|as_crispy_field }}
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-12">
-          {{ form.description|as_crispy_field }}
-        </div>
-      </div>
     </div>
-    
-    <!-- Scheduling Section -->
-    <div class="form-section">
-      <h4 class="form-section-title"><i class="far fa-calendar-alt mr-2"></i>Scheduling</h4>
-      <div class="row">
-        <div class="col-md-4">
-          {{ form.scheduled_date|as_crispy_field }}
-        </div>
-        <div class="col-md-4">
-          {{ form.start_time|as_crispy_field }}
-        </div>
-        <div class="col-md-4">
-          {{ form.end_time|as_crispy_field }}
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-6">
-          {{ form.location|as_crispy_field }}
-        </div>
-        <div class="col-md-6">
-          <!-- Virtual meeting link field removed as it doesn't exist in the model -->
-        </div>
-      </div>
-    </div>
-    
-    <!-- Attendees Section -->
-    <div class="form-section">
-      <h4 class="form-section-title"><i class="fas fa-users mr-2"></i>Attendees</h4>
-      <div class="row">
-        <div class="col-md-12">
-          {{ form.attendees|as_crispy_field }}
-        </div>
-      </div>
-      <div id="empty-attendees-message" class="alert alert-light text-center">
-        <i class="fas fa-info-circle mr-2"></i>No attendees selected. Please select at least one attendee.
-      </div>
-    </div>
-    
-    <!-- Agenda Items Section -->
-    <div class="form-section">
-      <h4 class="form-section-title"><i class="fas fa-list-ul mr-2"></i>Agenda Items</h4>
-      <div id="agenda-items-container">
-        <!-- Existing agenda items will be loaded here by JavaScript -->
-      </div>
-      <div id="empty-agenda-message" class="alert alert-light text-center">
-        <i class="fas fa-info-circle mr-2"></i>No agenda items added. Click the button below to add an agenda item.
-      </div>
-      <button type="button" class="btn btn-outline-primary add-item-btn" id="add-agenda-item">
-        <i class="fas fa-plus"></i> Add Agenda Item
-      </button>
-    </div>
-    
-    <!-- Attachments Section -->
-    <div class="form-section">
-      <h4 class="form-section-title"><i class="fas fa-paperclip mr-2"></i>Attachments</h4>
-      
-      {% if form.instance.id and form.instance.attachments.exists %}
-        <div class="existing-attachments mb-4">
-          <h6>Current Attachments</h6>
-          <div class="table-responsive">
-            <table class="table table-sm">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Size</th>
-                  <th>Uploaded</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for attachment in form.instance.attachments.all %}
-                  <tr>
-                    <td>{{ attachment.name }}</td>
-                    <td>{{ attachment.file.size|filesizeformat }}</td>
-                    <td>{{ attachment.uploaded_at|timesince }} ago</td>
-                    <td>
-                      <div class="btn-group btn-group-sm">
-                        <a href="{{ attachment.file.url }}" class="btn btn-outline-primary" download>
-                          <i class="fas fa-download"></i>
-                        </a>
-                        <button type="button" class="btn btn-outline-danger" 
-                           onclick="return confirm('Are you sure you want to remove this attachment?')">
-                          <i class="fas fa-trash"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      {% endif %}
-      
-      <div id="attachment-inputs">
-        <div class="attachment-input mb-3">
-          <div class="row">
-            <div class="col-md-5">
-              <div class="form-group">
-                <label for="attachment-name-0">Name</label>
-                <input type="text" class="form-control" id="attachment-name-0" name="attachment_name[]">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="attachment-file-0">File</label>
-                <div class="custom-file">
-                  <input type="file" class="custom-file-input" id="attachment-file-0" name="attachment_file[]">
-                  <label class="custom-file-label" for="attachment-file-0">Choose file</label>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Meeting Details</h6>
                 </div>
-              </div>
+                <div class="card-body">
+                    <form method="post" id="meeting-form" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.title.id_for_label }}">Title</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.title.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.meeting_type.id_for_label }}">Meeting Type</label>
+                                    {{ form.meeting_type }}
+                                    {% if form.meeting_type.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.meeting_type.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.status.id_for_label }}">Status</label>
+                                    {{ form.status }}
+                                    {% if form.status.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.status.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.scheduled_date.id_for_label }}">Date</label>
+                                    {{ form.scheduled_date }}
+                                    {% if form.scheduled_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.scheduled_date.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.start_time.id_for_label }}">Start Time</label>
+                                    {{ form.start_time }}
+                                    {% if form.start_time.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.start_time.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.end_time.id_for_label }}">End Time</label>
+                                    {{ form.end_time }}
+                                    {% if form.end_time.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.end_time.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.location.id_for_label }}">Location</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.location.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.description.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Hidden field to store agenda items as JSON -->
+                        <input type="hidden" name="agenda_items" id="agenda_items_json" value="{% if form.instance.agenda_items %}{{ form.instance.agenda_items|safe }}{% else %}[]{% endif %}">
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                {% if form.instance.id %}Update{% else %}Create{% endif %} Meeting
+                            </button>
+                            <a href="{% url 'dashboard:meeting_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="col-md-1 d-flex align-items-end">
-              <button type="button" class="btn btn-sm btn-outline-danger remove-attachment-btn" disabled>
-                <i class="fas fa-times"></i>
-              </button>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Participants Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Participants</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Group Selection -->
+                    <div class="form-group">
+                        <label for="{{ form.group.id_for_label }}">Select Group</label>
+                        {{ form.group }}
+                        <small class="form-text text-muted">If selected, all members of this group will be invited</small>
+                    </div>
+                    
+                    <!-- Individual Members Selection -->
+                    <div class="form-group">
+                        <label for="{{ form.members.id_for_label }}">Select Individual Members</label>
+                        {{ form.members }}
+                        <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple</small>
+                    </div>
+                    
+                    <!-- Field Officers Selection -->
+                    <div class="form-group">
+                        <label for="{{ form.field_officers.id_for_label }}">Assign Field Officers</label>
+                        {{ form.field_officers }}
+                        <small class="form-text text-muted">Officers who will help manage this meeting</small>
+                    </div>
+                </div>
             </div>
-          </div>
+            
+            <!-- Agenda Items Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Agenda Items</h6>
+                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#addAgendaItemModal">
+                        <i class="fas fa-plus fa-sm"></i> Add Item
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="agenda-items-container">
+                        <!-- Agenda items will be dynamically added here -->
+                    </div>
+                    <div id="empty-agenda-message">
+                        <i class="fas fa-clipboard-list fa-2x mb-3 text-gray-300"></i>
+                        <p>No agenda items added yet</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-      
-      <button type="button" class="btn btn-outline-primary btn-sm" id="add-attachment">
-        <i class="fas fa-plus"></i> Add Another Attachment
-      </button>
     </div>
-    
-    <!-- Notes Section (for Editing) -->
-    {% if form.instance.id %}
-      <div class="form-section">
-        <h4 class="form-section-title"><i class="fas fa-sticky-note mr-2"></i>Meeting Notes</h4>
-        <div class="row">
-          <div class="col-md-12">
-            {{ form.minutes|as_crispy_field }}
-          </div>
-        </div>
-      </div>
-    {% endif %}
-    
-    <!-- Form Buttons -->
-    <div class="form-buttons d-flex justify-content-between">
-      <a href="{% url 'dashboard:meeting_list' %}" class="btn btn-outline-secondary">
-        <i class="fas fa-times"></i> Cancel
-      </a>
-      <button type="submit" class="btn btn-primary">
-        <i class="fas fa-save"></i> {% if form.instance.id %}Update{% else %}Create{% endif %} Meeting
-      </button>
-    </div>
-  </form>
-  
-  <!-- Agenda Item Template (hidden) -->
-  <template id="agenda-item-template">
-    <div class="agenda-item" data-index="__INDEX__">
-      <button type="button" class="close remove-item-btn">
-        <span aria-hidden="true">&times;</span>
-      </button>
-      <div class="d-flex align-items-center mb-3">
-        <i class="fas fa-grip-vertical drag-handle"></i>
-        <h5 class="mb-0">Agenda Item #__NUMBER__</h5>
-      </div>
-      <div class="row">
-        <div class="col-md-8">
-          <div class="form-group">
-            <label for="agenda_title___INDEX__">Title</label>
-            <input type="text" class="form-control" id="agenda_title___INDEX__" name="agenda_title[]" required>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="form-group">
-            <label for="agenda_time___INDEX__">Time Allocation (minutes)</label>
-            <input type="number" class="form-control" id="agenda_time___INDEX__" name="agenda_time[]" min="1">
-          </div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="agenda_description___INDEX__">Description</label>
-        <textarea class="form-control" id="agenda_description___INDEX__" name="agenda_description[]" rows="2"></textarea>
-      </div>
-      <input type="hidden" name="agenda_id[]" value="">
-    </div>
-  </template>
 </div>
+
+<!-- Add Agenda Item Modal -->
+<div class="modal fade" id="addAgendaItemModal" tabindex="-1" aria-labelledby="addAgendaItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAgendaItemModalLabel">Add Agenda Item</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="agenda-item-form">
+                    <div class="form-group">
+                        <label for="agenda_time">Time (optional)</label>
+                        <input type="time" class="form-control" id="agenda_time">
+                    </div>
+                    <div class="form-group">
+                        <label for="agenda_title">Title</label>
+                        <input type="text" class="form-control" id="agenda_title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="agenda_presenter">Presenter (optional)</label>
+                        <input type="text" class="form-control" id="agenda_presenter">
+                    </div>
+                    <div class="form-group">
+                        <label for="agenda_duration">Duration (minutes, optional)</label>
+                        <input type="number" class="form-control" id="agenda_duration" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="agenda_description">Description (optional)</label>
+                        <textarea class="form-control" id="agenda_description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="save-agenda-item">Add Item</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
-
-<!-- Store agenda items in hidden DOM elements -->
-<div id="hidden-agenda-items" style="display:none">
-{% if form.instance.id %}
-    {% for item in form.instance.agenda_items.all %}
-        <div class="agenda-item-data"
-             data-id="{{ item.id|default:'null' }}"
-             data-title="{{ item.title|escapejs }}"
-             data-time="{{ item.time_allocation|default:'0' }}"
-             data-description="{{ item.description|escapejs }}">
-        </div>
-    {% endfor %}
-{% endif %}
-</div>
-
+<script src="{% static 'vendor/select2/js/select2.full.min.js' %}"></script>
+<script src="{% static 'vendor/sortable/Sortable.min.js' %}"></script>
 <script>
-  $(document).ready(function() {
-    // Initialize existingAgendaItems from hidden DOM elements
-    let existingAgendaItems = [];
-    $('.agenda-item-data').each(function() {
-      existingAgendaItems.push({
-        id: $(this).data('id') === 'null' ? null : parseInt($(this).data('id')),
-        title: $(this).data('title'),
-        time_allocation: $(this).data('time'),
-        description: $(this).data('description')
-      });
-    });
-    
-    // Initialize date picker
-    flatpickr("#id_scheduled_date", {
-      dateFormat: "Y-m-d",
-      minDate: "today"
-    });
-    
-    // Initialize time pickers
-    flatpickr("#id_start_time", {
-      enableTime: true,
-      noCalendar: true,
-      dateFormat: "H:i",
-      time_24hr: true
-    });
-    
-    flatpickr("#id_end_time", {
-      enableTime: true,
-      noCalendar: true,
-      dateFormat: "H:i",
-      time_24hr: true
-    });
-    
-    // Initialize select2 for attendees
-    $("#id_attendees").select2({
-      placeholder: "Select attendees",
-      allowClear: true,
-      width: '100%'
-    });
-    
-    // Custom file input
-    $(".custom-file-input").on("change", function() {
-      var fileName = $(this).val().split("\\").pop();
-      $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
-    });
-    
-    // Agenda Items
-    let agendaItemIndex = 0;
-    const agendaContainer = $("#agenda-items-container");
-    const agendaTemplate = document.getElementById("agenda-item-template").innerHTML;
-    const emptyAgendaMessage = $("#empty-agenda-message");
-    
-    // Load existing agenda items if any
-    if (existingAgendaItems.length > 0) {
-      existingAgendaItems.forEach(item => {
-        const newAgendaItem = agendaTemplate
-          .replace(/__INDEX__/g, agendaItemIndex)
-          .replace(/__NUMBER__/g, agendaItemIndex + 1)
-          .replace(/value=""/g, `value="${item.title}"`)
-          .replace(/<textarea[^>]*><\/textarea>/g, `<textarea class="form-control" name="agenda_description_${agendaItemIndex}" rows="2">${item.description}</textarea>`)
-          .replace(/value="15"/g, `value="${item.time_allocation}"`);
+    $(document).ready(function() {
+        // Initialize Select2
+        $('.select2').select2({
+            theme: 'bootstrap4',
+        });
         
-        agendaContainer.append(newAgendaItem);
-        agendaItemIndex++;
-      });
-      
-      // Make sure empty state message is hidden
-      emptyAgendaMessage.hide();
-    }
-    
-    // Add agenda item
-    $("#add-agenda-item").on("click", function() {
-      addAgendaItem();
-      updateEmptyMessages();
-    });
-    
-    // Remove agenda item
-    $(document).on("click", ".remove-item-btn", function() {
-      $(this).closest(".agenda-item").remove();
-      renumberAgendaItems();
-      updateEmptyMessages();
-    });
-    
-    function addAgendaItem(data = {}) {
-      const newItem = agendaTemplate
-        .replace(/__INDEX__/g, agendaItemIndex)
-        .replace(/__NUMBER__/g, agendaItemIndex + 1);
-      
-      agendaContainer.append(newItem);
-      
-      // If we have data, populate the fields
-      if (data.id) {
-        const item = agendaContainer.find(`.agenda-item[data-index="${agendaItemIndex}"]`);
-        item.find('input[name="agenda_id[]"]').val(data.id);
-        item.find('input[name="agenda_title[]"]').val(data.title);
-        item.find('input[name="agenda_time[]"]').val(data.time_allocation);
-        item.find('textarea[name="agenda_description[]"]').val(data.description);
-      }
-      
-      agendaItemIndex++;
-    }
-    
-    function renumberAgendaItems() {
-      agendaContainer.find(".agenda-item").each(function(idx) {
-        $(this).find("h5").text(`Agenda Item #${idx + 1}`);
-      });
-    }
-    
-    // Make agenda items sortable
-    if (agendaContainer.length) {
-      new Sortable(agendaContainer[0], {
-        handle: '.drag-handle',
-        animation: 150,
-        onEnd: function() {
-          renumberAgendaItems();
+        // Make agenda items sortable
+        var sortable = new Sortable(document.getElementById('agenda-items-container'), {
+            animation: 150,
+            handle: '.drag-handle',
+            onEnd: function() {
+                updateAgendaItemsJson();
+            }
+        });
+        
+        // Load existing agenda items if they exist
+        var existingAgendaItems = [];
+        
+        try {
+            var agendaItemsJson = $('#agenda_items_json').val();
+            if (agendaItemsJson && agendaItemsJson !== '[]') {
+                existingAgendaItems = JSON.parse(agendaItemsJson);
+            }
+        } catch (e) {
+            console.error("Error parsing agenda items:", e);
         }
-      });
-    }
-    
-    // Attachments
-    let attachmentIndex = 0;
-    const attachmentInputs = $("#attachment-inputs");
-    
-    $("#add-attachment").on("click", function() {
-      attachmentIndex++;
-      const newInput = $(".attachment-input").first().clone();
-      
-      newInput.find("input").val("").attr("id", function(_, id) {
-        return id.replace("-0", `-${attachmentIndex}`);
-      });
-      
-      newInput.find("label").attr("for", function(_, attr) {
-        return attr.replace("-0", `-${attachmentIndex}`);
-      });
-      
-      newInput.find(".custom-file-label").text("Choose file");
-      newInput.find(".remove-attachment-btn").prop("disabled", false);
-      
-      attachmentInputs.append(newInput);
-      
-      // Re-initialize the file input event
-      attachmentInputs.find(".custom-file-input").on("change", function() {
-        var fileName = $(this).val().split("\\").pop();
-        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
-      });
+        
+        // Populate form with existing agenda items
+        if (existingAgendaItems.length > 0) {
+            existingAgendaItems.forEach(function(item) {
+                addAgendaItemToContainer(item);
+            });
+        }
+        
+        // Save agenda item
+        $('#save-agenda-item').click(function() {
+            var time = $('#agenda_time').val();
+            var title = $('#agenda_title').val();
+            var presenter = $('#agenda_presenter').val();
+            var duration = $('#agenda_duration').val();
+            var description = $('#agenda_description').val();
+            
+            if (!title) {
+                alert('Please enter a title for the agenda item.');
+                return;
+            }
+            
+            var agendaItem = {
+                time: time,
+                title: title,
+                presenter: presenter,
+                duration: duration,
+                description: description
+            };
+            
+            addAgendaItemToContainer(agendaItem);
+            updateAgendaItemsJson();
+            
+            // Clear form
+            $('#agenda_time').val('');
+            $('#agenda_title').val('');
+            $('#agenda_presenter').val('');
+            $('#agenda_duration').val('');
+            $('#agenda_description').val('');
+            
+            // Close modal
+            $('#addAgendaItemModal').modal('hide');
+        });
+        
+        // Delete agenda item
+        $(document).on('click', '.delete-agenda-item', function() {
+            $(this).closest('.agenda-item').remove();
+            updateAgendaItemsJson();
+        });
+        
+        // Function to add agenda item to the container
+        function addAgendaItemToContainer(item) {
+            var html = '<div class="agenda-item" data-time="' + (item.time || '') + '" ' +
+                'data-title="' + (item.title || '') + '" ' +
+                'data-presenter="' + (item.presenter || '') + '" ' +
+                'data-duration="' + (item.duration || '') + '" ' +
+                'data-description="' + (item.description || '') + '">' +
+                '<i class="fas fa-grip-vertical drag-handle"></i>' +
+                '<div class="row">';
+            
+            if (item.time) {
+                html += '<div class="col-md-4"><div class="agenda-time">' + item.time + '</div></div>';
+                html += '<div class="col-md-8">';
+            } else {
+                html += '<div class="col-md-12">';
+            }
+            
+            html += '<h5>' + item.title + '</h5>';
+            
+            if (item.presenter) {
+                html += '<div><strong>Presenter:</strong> ' + item.presenter + '</div>';
+            }
+            
+            if (item.duration) {
+                html += '<div><strong>Duration:</strong> ' + item.duration + ' minutes</div>';
+            }
+            
+            if (item.description) {
+                html += '<div><strong>Description:</strong> ' + item.description + '</div>';
+            }
+            
+            html += '</div></div>' +
+                '<i class="fas fa-times delete-agenda-item"></i>' +
+                '</div>';
+            
+            $('#agenda-items-container').append(html);
+        }
+        
+        // Function to update the hidden JSON field with agenda items
+        function updateAgendaItemsJson() {
+            var items = [];
+            
+            $('.agenda-item').each(function() {
+                var item = {
+                    time: $(this).data('time'),
+                    title: $(this).data('title'),
+                    presenter: $(this).data('presenter'),
+                    duration: $(this).data('duration'),
+                    description: $(this).data('description')
+                };
+                
+                items.push(item);
+            });
+            
+            $('#agenda_items_json').val(JSON.stringify(items));
+        }
     });
-    
-    $(document).on("click", ".remove-attachment-btn", function() {
-      if (!$(this).prop("disabled")) {
-        $(this).closest(".attachment-input").remove();
-      }
-    });
-    
-    // Function to update empty messages visibility
-    function updateEmptyMessages() {
-      if (agendaContainer.children('.agenda-item').length === 0) {
-        emptyAgendaMessage.show();
-      } else {
-        emptyAgendaMessage.hide();
-      }
-      
-      if ($("#id_attendees").val() === null || $("#id_attendees").val().length === 0) {
-        $("#empty-attendees-message").show();
-      } else {
-        $("#empty-attendees-message").hide();
-      }
-    }
-    
-    // Form validation
-    $("#meeting-form").on("submit", function(e) {
-      if ($("#id_attendees").val() === null || $("#id_attendees").val().length === 0) {
-        e.preventDefault();
-        $("#empty-attendees-message").show();
-        $([document.documentElement, document.body]).animate({
-          scrollTop: $("#empty-attendees-message").offset().top - 100
-        }, 500);
-        return false;
-      }
-      
-      return true;
-    });
-    
-    // Monitor attendees changes
-    $("#id_attendees").on("change", function() {
-      updateEmptyMessages();
-    });
-  });
 </script>
-{% endblock %} 
 {% endblock %} 

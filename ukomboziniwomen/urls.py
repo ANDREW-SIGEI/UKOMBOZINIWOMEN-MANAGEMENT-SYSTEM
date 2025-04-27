@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect
 from dashboard.views import offline_view
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -42,8 +43,11 @@ urlpatterns = [
     # Offline page
     path('offline/', offline_view, name='offline'),
     
-    # Default redirect to dashboard
-    path('', lambda request: redirect('dashboard:index'), name='home'),
+    # Test page to check browser access
+    path('test/', TemplateView.as_view(template_name='test.html'), name='test'),
+    
+    # Default redirect to dashboard - Changed to direct template for testing
+    path('', TemplateView.as_view(template_name='test.html'), name='home'),
 ]
 
 # Add static and media files serving during development
